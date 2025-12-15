@@ -17,7 +17,7 @@ export function getRoomId(): string | null {
  */
 export function getPartyKitHost(): string {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  return isDev ? 'localhost:1999' : 'the-synth-room.yourusername.partykit.dev';
+  return isDev ? 'localhost:1999' : 'the-synth-room.avnersorek.partykit.dev';
 }
 
 /**
