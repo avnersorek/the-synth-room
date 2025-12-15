@@ -186,9 +186,8 @@ export class UI {
   private startUpdateLoop() {
     let lastStep = -1;
 
-    setInterval(() => {
-      const currentStep = this.sequencer.getCurrentStep();
-
+    // Use callback-based updates instead of polling for better sync
+    this.sequencer.onStep((currentStep: number) => {
       // Pulse play button every 4 beats (on the downbeat) when playing
       if (this.sequencer.isPlaying() && currentStep % 4 === 0 && currentStep !== lastStep) {
         const playButton = this.container.querySelector('#play') as HTMLElement;
@@ -215,7 +214,7 @@ export class UI {
       if (leadCard) {
         this.leadInstrument.updateCurrentStep(leadCard, currentStep);
       }
-    }, 50);
+    });
   }
 
   updateKitSelector(kitName: string) {

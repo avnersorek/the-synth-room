@@ -13,6 +13,7 @@ export class Sequencer {
   private loopId: number | null;
   private bpm: number;
   private sync: SyncManager | null;
+  private onStepCallbacks: Array<(step: number) => void>;
 
   constructor(audio: AudioEngine, sync?: SyncManager) {
     this.audio = audio;
@@ -21,6 +22,7 @@ export class Sequencer {
     this.currentStep = 0;
     this.loopId = null;
     this.bpm = 120;
+    this.onStepCallbacks = [];
 
     // Set initial BPM in Tone.Transport
     Tone.getTransport().bpm.value = this.bpm;
@@ -146,11 +148,16 @@ export class Sequencer {
         instrument.playStep(this.currentStep, time);
       });
 
-      // Update step for visual feedback
-      // Use setTimeout with a small delay to sync with audio
-      setTimeout(() => {
-        this.currentStep = (this.currentStep + 1) % 16;
-      }, 0);
+      // Update step counter immediately (works even when tab is not focused)
+      const nextStep = (this.currentStep + 1) % 16;
+      this.currentStep = nextStep;
+
+      // Notify all listeners of the step change using requestAnimationFrame
+      // This ensures visual updates sync with browser paint when tab is visible
+      // When tab is not visible, this will queue but the audio continues playing
+      requestAnimationFrame(() => {
+        this.onStepCallbacks.forEach(callback => callback(nextStep));
+      });
     }, '16n');
 
     transport.start();
@@ -165,6 +172,8 @@ export class Sequencer {
     }
     transport.stop();
     this.currentStep = 0;
+    // Notify listeners of reset
+    this.onStepCallbacks.forEach(callback => callback(this.currentStep));
   }
 
   getCurrentStep() {
@@ -173,6 +182,10 @@ export class Sequencer {
 
   isPlaying() {
     return this.loopId !== null && Tone.getTransport().state === 'started';
+  }
+
+  onStep(callback: (step: number) => void) {
+    this.onStepCallbacks.push(callback);
   }
 
   getSync(): SyncManager | null {
