@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "type-check": "tsc --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -13,5 +14,10 @@
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "partykit": "^0.0.115",
+    "y-partykit": "^0.0.33",
+    "yjs": "^13.6.27"
+  }
 }
