@@ -17,6 +17,7 @@
   "description": "",
   "dependencies": {
     "partykit": "^0.0.115",
+    "tone": "^15.1.22",
     "y-partykit": "^0.0.33",
     "yjs": "^13.6.27"
   }

@@ -1,37 +1,58 @@
+import * as Tone from 'tone';
+
 export class AudioEngine {
-  private context: AudioContext;
-  private buffers: Map<string, AudioBuffer>;
-  private gainNode: GainNode;
+  private samplers: Map<string, Tone.Sampler>;
+  private volume: Tone.Volume;
 
   constructor() {
-    this.context = new AudioContext();
-    this.buffers = new Map();
-    this.gainNode = this.context.createGain();
-    this.gainNode.connect(this.context.destination);
+    this.samplers = new Map();
+    this.volume = new Tone.Volume(0).toDestination();
   }
 
   async loadSample(name: string, url: string) {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await this.context.decodeAudioData(arrayBuffer);
-    this.buffers.set(name, audioBuffer);
+    // Create a sampler for this specific sample
+    const sampler = new Tone.Sampler({
+      urls: {
+        'C3': url.replace('/sounds/', './sounds/'),
+      },
+      onload: () => {
+        console.log(`Sample ${name} loaded`);
+      },
+    }).connect(this.volume);
+
+    this.samplers.set(name, sampler);
   }
 
-  play(name: string) {
-    const buffer = this.buffers.get(name);
-    if (!buffer) return;
+  play(name: string, time?: number) {
+    const sampler = this.samplers.get(name);
+    if (!sampler) return;
 
-    const source = this.context.createBufferSource();
-    source.buffer = buffer;
-    source.connect(this.gainNode);
-    source.start();
+    // Play the sample at C3 (the note we loaded it at)
+    // If time is provided, schedule it; otherwise play immediately
+    if (time !== undefined) {
+      sampler.triggerAttackRelease('C3', '16n', time);
+    } else {
+      sampler.triggerAttackRelease('C3', '16n');
+    }
   }
 
   setVolume(value: number) {
-    this.gainNode.gain.value = value;
+    // Convert 0-1 range to decibels
+    // 0.7 -> ~-3dB, 1.0 -> 0dB, 0 -> -Infinity
+    if (value === 0) {
+      this.volume.volume.value = -Infinity;
+    } else {
+      this.volume.volume.value = Tone.gainToDb(value);
+    }
   }
 
   clear() {
-    this.buffers.clear();
+    this.samplers.forEach(sampler => sampler.dispose());
+    this.samplers.clear();
+  }
+
+  async start() {
+    await Tone.start();
+    console.log('Tone.js audio context started');
   }
 }

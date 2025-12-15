@@ -1,3 +1,4 @@
+import * as Tone from 'tone';
 import { AudioEngine } from './audio';
 import { SyncManager } from './sync';
 import { Instrument } from './instrument';
@@ -9,7 +10,7 @@ export class Sequencer {
   private audio: AudioEngine;
   private instruments: Map<string, Instrument>;
   private currentStep: number;
-  private intervalId: number | null;
+  private loopId: number | null;
   private bpm: number;
   private sync: SyncManager | null;
 
@@ -18,8 +19,11 @@ export class Sequencer {
     this.sync = sync || null;
     this.instruments = new Map();
     this.currentStep = 0;
-    this.intervalId = null;
+    this.loopId = null;
     this.bpm = 120;
+
+    // Set initial BPM in Tone.Transport
+    Tone.getTransport().bpm.value = this.bpm;
 
     // Initialize instruments
     this.initializeInstruments();
@@ -116,16 +120,13 @@ export class Sequencer {
   }
 
   setBpm(bpm: number) {
-    const wasPlaying = this.intervalId !== null;
-    if (wasPlaying) this.stop();
     this.bpm = bpm;
+    Tone.getTransport().bpm.value = bpm;
 
     // Sync to other users if collaborative mode is enabled
     if (this.sync) {
       this.sync.setBpm(bpm);
     }
-
-    if (wasPlaying) this.play();
   }
 
   setVolume(value: number) {
@@ -133,17 +134,35 @@ export class Sequencer {
   }
 
   play() {
-    if (this.intervalId) return;
+    if (this.loopId !== null) return;
 
-    const interval = (60 / this.bpm) * 1000 / 4;
-    this.intervalId = window.setInterval(() => this.tick(), interval);
+    const transport = Tone.getTransport();
+
+    // Schedule a repeating event on Tone.Transport
+    this.loopId = transport.scheduleRepeat((time: number) => {
+      // Play all instruments at the scheduled time
+      this.instruments.forEach((instrument) => {
+        instrument.playStep(this.currentStep, time);
+      });
+
+      // Update step for visual feedback
+      // Use setTimeout with a small delay to sync with audio
+      setTimeout(() => {
+        this.currentStep = (this.currentStep + 1) % 16;
+      }, 0);
+    }, '16n');
+
+    transport.start();
   }
 
   stop() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    const transport = Tone.getTransport();
+
+    if (this.loopId !== null) {
+      transport.clear(this.loopId);
+      this.loopId = null;
     }
+    transport.stop();
     this.currentStep = 0;
   }
 
@@ -152,15 +171,7 @@ export class Sequencer {
   }
 
   isPlaying() {
-    return this.intervalId !== null;
-  }
-
-  private tick() {
-    // Play all instruments
-    this.instruments.forEach((instrument) => {
-      instrument.playStep(this.currentStep);
-    });
-    this.currentStep = (this.currentStep + 1) % 16;
+    return this.loopId !== null && Tone.getTransport().state === 'started';
   }
 
   getSync(): SyncManager | null {

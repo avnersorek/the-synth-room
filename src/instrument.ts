@@ -67,11 +67,11 @@ export class Instrument {
     this.state.currentKit = kit;
   }
 
-  playStep(step: number): void {
+  playStep(step: number, time?: number): void {
     for (let row = 0; row < this.config.gridRows; row++) {
       if (this.state.grid[row][step]) {
         const sampleName = this.config.samples[row].name;
-        this.audio.play(sampleName);
+        this.audio.play(sampleName, time);
       }
     }
   }

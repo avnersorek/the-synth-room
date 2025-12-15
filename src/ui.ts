@@ -5,6 +5,7 @@ export class UI {
   private sequencer: Sequencer;
   private container: HTMLElement;
   private onKitChange: (kit: string) => Promise<void>;
+  private audioStarted: boolean = false;
 
   constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>) {
     this.sequencer = sequencer;
@@ -88,7 +89,17 @@ export class UI {
       }
 
       if (target.id === 'play') {
-        this.sequencer.play();
+        // Start Tone.js audio context on first user interaction
+        if (!this.audioStarted) {
+          import('tone').then(async (Tone) => {
+            await Tone.start();
+            this.audioStarted = true;
+            console.log('Tone.js audio context started');
+            this.sequencer.play();
+          });
+        } else {
+          this.sequencer.play();
+        }
       }
 
       if (target.id === 'stop') {
