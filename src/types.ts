@@ -74,7 +74,7 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
     type: 'lead',
     name: 'Lead 1',
     samples: LEAD_NOTES.map(note => ({ name: note, path: '' })),
-    gridRows: 24,
+    gridRows: 25,
     gridCols: 16,
     parameters: {
       volume: 0.5,

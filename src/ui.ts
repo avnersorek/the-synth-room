@@ -225,6 +225,14 @@ export class UI {
     }
   }
 
+  updateSynthSelector(synthType: string) {
+    // Always update lead1 synth selector since lead1 is always visible
+    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
+    if (leadCard) {
+      this.leadInstrument.updateSynthSelector(leadCard, synthType);
+    }
+  }
+
   private setupSyncUI() {
     const sync = this.sequencer.getSync();
     if (!sync) return;

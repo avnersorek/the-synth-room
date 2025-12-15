@@ -18,6 +18,7 @@ export class SyncManager {
   private instruments!: Y.Map<any>;
   private bpm!: Y.Map<any>;
   private kit!: Y.Map<any>;
+  private synthType!: Y.Map<any>;
   private connectionCallbacks: ((status: ConnectionStatus) => void)[] = [];
   private connectionStatus: ConnectionStatus = { connected: false, synced: false };
 
@@ -47,6 +48,8 @@ export class SyncManager {
       // After sync, refresh our references to ensure we have the latest data
       if (synced) {
         this.refreshReferences();
+        // Migrate grid dimensions if needed (e.g., when config changes)
+        this.migrateGridDimensions();
       }
 
       this.notifyConnectionChange(this.connectionStatus);
@@ -60,21 +63,29 @@ export class SyncManager {
     // Initialize instruments map
     this.instruments = this.ydoc.getMap('instruments');
 
-    // Initialize drums instrument
-    if (!this.instruments.has('drums')) {
-      const drumsMap = new Y.Map();
-      const gridArray = new Y.Array<Y.Array<number>>();
-      for (let i = 0; i < 8; i++) {
-        const row = new Y.Array<number>();
-        for (let j = 0; j < 16; j++) {
-          row.push([0]);
-        }
-        gridArray.push([row]);
-      }
-      drumsMap.set('grid', gridArray);
+    // Initialize each instrument from the INSTRUMENTS config
+    Object.keys(INSTRUMENTS).forEach((instrumentId) => {
+      if (!this.instruments.has(instrumentId)) {
+        const config = INSTRUMENTS[instrumentId];
+        const instrumentMap = new Y.Map();
+        const gridArray = new Y.Array<Y.Array<number>>();
 
-      this.instruments.set('drums', drumsMap);
-    }
+        // Use config dimensions instead of hardcoded values
+        const rows = config.gridRows;
+        const cols = config.gridCols;
+
+        for (let i = 0; i < rows; i++) {
+          const row = new Y.Array<number>();
+          for (let j = 0; j < cols; j++) {
+            row.push([0]);
+          }
+          gridArray.push([row]);
+        }
+        instrumentMap.set('grid', gridArray);
+
+        this.instruments.set(instrumentId, instrumentMap);
+      }
+    });
 
     // Initialize kit map (shared across the app, not per-instrument)
     this.kit = this.ydoc.getMap('kit');
@@ -82,20 +93,10 @@ export class SyncManager {
       this.kit.set('name', 'kit_a');
     }
 
-    // Initialize lead1 instrument
-    if (!this.instruments.has('lead1')) {
-      const lead1Map = new Y.Map();
-      const gridArray = new Y.Array<Y.Array<number>>();
-      for (let i = 0; i < 8; i++) {
-        const row = new Y.Array<number>();
-        for (let j = 0; j < 16; j++) {
-          row.push([0]);
-        }
-        gridArray.push([row]);
-      }
-      lead1Map.set('grid', gridArray);
-
-      this.instruments.set('lead1', lead1Map);
+    // Initialize synth type map (for lead instrument)
+    this.synthType = this.ydoc.getMap('synthType');
+    if (!this.synthType.has('type')) {
+      this.synthType.set('type', 'Synth');
     }
 
     // Initialize BPM at root level (shared across all instruments)
@@ -110,6 +111,62 @@ export class SyncManager {
     this.instruments = this.ydoc.getMap('instruments');
     this.bpm = this.ydoc.getMap('bpm');
     this.kit = this.ydoc.getMap('kit');
+    this.synthType = this.ydoc.getMap('synthType');
+  }
+
+  private migrateGridDimensions() {
+    // Migrate existing grids to match current config dimensions
+    // This is needed when the config changes (e.g., lead1 went from 8 to 25 rows)
+    Object.keys(INSTRUMENTS).forEach((instrumentId) => {
+      const config = INSTRUMENTS[instrumentId];
+      const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+
+      if (!instrument) {
+        console.log(`Migration: Instrument ${instrumentId} not found, will be created on next init`);
+        return;
+      }
+
+      const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
+      if (!grid) {
+        console.log(`Migration: Grid for ${instrumentId} not found`);
+        return;
+      }
+
+      const currentRows = grid.length;
+      const currentCols = grid.length > 0 ? grid.get(0).length : 0;
+      const targetRows = config.gridRows;
+      const targetCols = config.gridCols;
+
+      console.log(`Migration: ${instrumentId} - current: ${currentRows}x${currentCols}, target: ${targetRows}x${targetCols}`);
+
+      // Expand rows if needed
+      if (currentRows < targetRows) {
+        console.log(`Migration: Expanding ${instrumentId} from ${currentRows} to ${targetRows} rows`);
+        this.ydoc.transact(() => {
+          for (let i = currentRows; i < targetRows; i++) {
+            const row = new Y.Array<number>();
+            for (let j = 0; j < targetCols; j++) {
+              row.push([0]);
+            }
+            grid.push([row]);
+          }
+        }, 'migration');
+      }
+
+      // Expand columns if needed (for all rows including newly added ones)
+      if (currentCols < targetCols) {
+        console.log(`Migration: Expanding ${instrumentId} columns from ${currentCols} to ${targetCols}`);
+        this.ydoc.transact(() => {
+          for (let i = 0; i < grid.length; i++) {
+            const row = grid.get(i);
+            const rowLength = row.length;
+            for (let j = rowLength; j < targetCols; j++) {
+              row.push([0]);
+            }
+          }
+        }, 'migration');
+      }
+    });
   }
 
   // Get current grid state for an instrument
@@ -183,10 +240,15 @@ export class SyncManager {
     const gridArray = instrument.get('grid') as Y.Array<Y.Array<number>>;
     if (!gridArray) return;
 
+    // Use the actual grid dimensions from config instead of hardcoded values
+    const config = INSTRUMENTS[instrumentId];
+    const maxRows = config?.gridRows || gridArray.length;
+    const maxCols = config?.gridCols || 16;
+
     this.ydoc.transact(() => {
-      for (let i = 0; i < Math.min(grid.length, 8); i++) {
+      for (let i = 0; i < Math.min(grid.length, maxRows); i++) {
         const rowArray = gridArray.get(i);
-        for (let j = 0; j < Math.min(grid[i].length, 16); j++) {
+        for (let j = 0; j < Math.min(grid[i].length, maxCols); j++) {
           rowArray.delete(j, 1);
           rowArray.insert(j, [grid[i][j] ? 1 : 0]);
         }
@@ -198,7 +260,8 @@ export class SyncManager {
   onGridChange(callback: (instrumentId: string, row: number, col: number, value: boolean) => void) {
     // Set up a deep observer on all instruments
     const setupObservers = () => {
-      ['drums', 'lead1'].forEach((instrumentId) => {
+      // Use Object.keys to get all instruments from config dynamically
+      Object.keys(INSTRUMENTS).forEach((instrumentId) => {
         const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
         if (!instrument) return;
 
@@ -315,6 +378,46 @@ export class SyncManager {
       if (status.synced) {
         console.log('Sync completed, re-setting up kit observer');
         setupKitObserver();
+      }
+    });
+  }
+
+  // Get current synth type
+  getSynthType(): string {
+    return this.synthType.get('type') || 'Synth';
+  }
+
+  // Set synth type
+  setSynthType(type: string) {
+    console.log(`setSynthType called with: ${type}`);
+    this.ydoc.transact(() => {
+      this.synthType.set('type', type);
+    }, 'local');
+  }
+
+  // Listen to synth type changes from remote users
+  onSynthTypeChange(callback: (type: string) => void) {
+    const setupSynthTypeObserver = () => {
+      console.log('Setting up synth type observer on', this.synthType);
+      this.synthType.observe((event) => {
+        console.log('Synth type change event:', event.transaction.origin, this.synthType.get('type'));
+        if (event.transaction.origin === 'local') return;
+        const type = this.synthType.get('type');
+        if (type) {
+          console.log(`onSynthTypeChange: Calling callback with type "${type}"`);
+          callback(type);
+        }
+      });
+    };
+
+    // Set up observer immediately
+    setupSynthTypeObserver();
+
+    // Also set up observer after sync completes (to handle new reference)
+    this.onConnectionChange((status) => {
+      if (status.synced) {
+        console.log('Sync completed, re-setting up synth type observer');
+        setupSynthTypeObserver();
       }
     });
   }

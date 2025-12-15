@@ -7,6 +7,7 @@ import { SyncManager } from './sync';
 import { Lobby } from './lobby';
 
 let isLoadingKitFromSync = false;
+let isLoadingSynthTypeFromSync = false;
 
 async function loadKit(sequencer: Sequencer, kit: string) {
   console.log(`loadKit: Loading kit "${kit}"`);
@@ -60,9 +61,12 @@ async function initRoom(roomId: string) {
   const initialKit = sync.getKit();
   await loadKit(sequencer, initialKit);
 
-  // Initialize lead synth
+  // Initialize lead synth with initial synth type from sync
+  const initialSynthType = sync.getSynthType();
   const lead1Instrument = sequencer.getInstrument('lead1');
   if (lead1Instrument) {
+    lead1Instrument.setParameter('synthType', initialSynthType);
+    audio.createSynth('lead1', initialSynthType as any);
     await lead1Instrument.loadSamples();
   }
 
@@ -79,6 +83,10 @@ async function initRoom(roomId: string) {
 
   // Handle synth type changes
   const onSynthChange = (synthType: string) => {
+    // Update sync if this is a local change
+    if (!isLoadingSynthTypeFromSync) {
+      sync.setSynthType(synthType);
+    }
     const lead1 = sequencer.getInstrument('lead1');
     if (lead1) {
       lead1.setParameter('synthType', synthType);
@@ -104,7 +112,30 @@ async function initRoom(roomId: string) {
     }
   });
 
+  // Listen to remote synth type changes
+  sync.onSynthTypeChange((type) => {
+    console.log(`main.ts: Remote synth type change detected: "${type}"`);
+    isLoadingSynthTypeFromSync = true;
+    try {
+      const lead1 = sequencer.getInstrument('lead1');
+      if (lead1) {
+        lead1.setParameter('synthType', type);
+        audio.createSynth('lead1', type as any);
+      }
+      // Update UI synth selector to reflect the change
+      ui.updateSynthSelector(type);
+      console.log(`main.ts: Synth type "${type}" loaded successfully`);
+    } catch (error) {
+      console.error(`main.ts: Error loading synth type "${type}":`, error);
+    } finally {
+      isLoadingSynthTypeFromSync = false;
+    }
+  });
+
   ui.render();
+
+  // Update selectors to reflect initial state from sync
+  ui.updateSynthSelector(initialSynthType);
 }
 
 async function init() {
