@@ -188,7 +188,7 @@ export class UI {
 
     // Use callback-based updates instead of polling for better sync
     this.sequencer.onStep((currentStep: number) => {
-      // Pulse play button every 4 beats (on the downbeat) when playing
+      // Pulse play button and title every 4 beats (on the downbeat) when playing
       if (this.sequencer.isPlaying() && currentStep % 4 === 0 && currentStep !== lastStep) {
         const playButton = this.container.querySelector('#play') as HTMLElement;
         if (playButton) {
@@ -198,6 +198,16 @@ export class UI {
           void playButton.offsetWidth;
           playButton.classList.add('playing');
         }
+
+        const title = this.container.querySelector('h1') as HTMLElement;
+        if (title) {
+          // Remove and re-add class to restart animation
+          title.classList.remove('playing');
+          // Force reflow to restart animation
+          void title.offsetWidth;
+          title.classList.add('playing');
+        }
+
         lastStep = currentStep;
       } else if (currentStep % 4 !== 0) {
         lastStep = -1; // Reset tracker when not on downbeat
