@@ -14,9 +14,7 @@ export interface ConnectionStatus {
 export class SyncManager {
   private ydoc: Y.Doc;
   private provider: PartyKitProvider;
-  private drums: Y.Map<any>;
-  private grid!: Y.Array<Y.Array<number>>;
-  private kit!: Y.Map<any>;
+  private instruments!: Y.Map<any>;
   private bpm!: Y.Map<any>;
   private connectionCallbacks: ((status: ConnectionStatus) => void)[] = [];
   private connectionStatus: ConnectionStatus = { connected: false, synced: false };
@@ -24,11 +22,6 @@ export class SyncManager {
   constructor(config: SyncConfig) {
     // Initialize Yjs document
     this.ydoc = new Y.Doc();
-
-    // Initialize shared types with new structure:
-    // drums: { grid, kit }
-    // bpm: { value }
-    this.drums = this.ydoc.getMap('drums');
 
     // Connect to PartyKit server FIRST before initializing data
     this.provider = new PartyKitProvider(
@@ -62,28 +55,44 @@ export class SyncManager {
   }
 
   private initializeDefaultData() {
-    // Initialize grid inside drums
-    if (!this.drums.has('grid')) {
+    // Initialize instruments map
+    this.instruments = this.ydoc.getMap('instruments');
+
+    // Initialize drums instrument
+    if (!this.instruments.has('drums')) {
+      const drumsMap = new Y.Map();
       const gridArray = new Y.Array<Y.Array<number>>();
-      // Create 8 rows of 16 columns
       for (let i = 0; i < 8; i++) {
         const row = new Y.Array<number>();
         for (let j = 0; j < 16; j++) {
-          row.push([0]); // 0 = inactive, 1 = active
+          row.push([0]);
         }
         gridArray.push([row]);
       }
-      this.drums.set('grid', gridArray);
-    }
-    this.grid = this.drums.get('grid') as Y.Array<Y.Array<number>>;
+      drumsMap.set('grid', gridArray);
 
-    // Initialize kit inside drums
-    if (!this.drums.has('kit')) {
       const kitMap = new Y.Map();
       kitMap.set('name', 'kit_a');
-      this.drums.set('kit', kitMap);
+      drumsMap.set('kit', kitMap);
+
+      this.instruments.set('drums', drumsMap);
     }
-    this.kit = this.drums.get('kit') as Y.Map<any>;
+
+    // Initialize lead1 instrument
+    if (!this.instruments.has('lead1')) {
+      const lead1Map = new Y.Map();
+      const gridArray = new Y.Array<Y.Array<number>>();
+      for (let i = 0; i < 8; i++) {
+        const row = new Y.Array<number>();
+        for (let j = 0; j < 16; j++) {
+          row.push([0]);
+        }
+        gridArray.push([row]);
+      }
+      lead1Map.set('grid', gridArray);
+
+      this.instruments.set('lead1', lead1Map);
+    }
 
     // Initialize BPM at root level (shared across all instruments)
     this.bpm = this.ydoc.getMap('bpm');
@@ -94,16 +103,25 @@ export class SyncManager {
 
   private refreshReferences() {
     // Refresh references after sync to ensure we have the latest data
-    this.grid = this.drums.get('grid') as Y.Array<Y.Array<number>>;
-    this.kit = this.drums.get('kit') as Y.Map<any>;
+    this.instruments = this.ydoc.getMap('instruments');
     this.bpm = this.ydoc.getMap('bpm');
   }
 
-  // Get current grid state (8x16 boolean array)
-  getGrid(): boolean[][] {
+  // Get current grid state for an instrument (8x16 boolean array)
+  getGrid(instrumentId: string): boolean[][] {
+    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    if (!instrument) {
+      return Array(8).fill(null).map(() => Array(16).fill(false));
+    }
+
+    const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
+    if (!grid) {
+      return Array(8).fill(null).map(() => Array(16).fill(false));
+    }
+
     const result: boolean[][] = [];
-    for (let i = 0; i < this.grid.length; i++) {
-      const row = this.grid.get(i);
+    for (let i = 0; i < grid.length; i++) {
+      const row = grid.get(i);
       const rowArray: boolean[] = [];
       for (let j = 0; j < row.length; j++) {
         rowArray.push(row.get(j) === 1);
@@ -114,14 +132,20 @@ export class SyncManager {
   }
 
   // Toggle a grid cell
-  toggleCell(row: number, col: number) {
-    if (!this.grid || this.grid.length === 0) {
+  toggleCell(instrumentId: string, row: number, col: number) {
+    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    if (!instrument) {
+      console.warn(`Instrument ${instrumentId} not found`);
+      return;
+    }
+
+    const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
+    if (!grid || grid.length === 0) {
       console.warn('Grid not initialized yet, skipping toggle');
       return;
     }
 
-    const rowArray = this.grid.get(row);
-
+    const rowArray = grid.get(row);
     if (!rowArray) {
       console.warn(`Row ${row} not found in grid, reinitializing`);
       this.refreshReferences();
@@ -130,7 +154,7 @@ export class SyncManager {
 
     // Use a transaction with origin to mark this as a local change
     const currentValue = rowArray.get(col);
-    console.log(`toggleCell[${row}, ${col}]: ${currentValue} -> ${currentValue === 1 ? 0 : 1}`);
+    console.log(`toggleCell[${instrumentId}, ${row}, ${col}]: ${currentValue} -> ${currentValue === 1 ? 0 : 1}`);
 
     this.ydoc.transact(() => {
       rowArray.delete(col, 1);
@@ -139,10 +163,19 @@ export class SyncManager {
   }
 
   // Set entire grid state (for initialization)
-  setGrid(grid: boolean[][]) {
+  setGrid(instrumentId: string, grid: boolean[][]) {
+    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    if (!instrument) {
+      console.warn(`Instrument ${instrumentId} not found`);
+      return;
+    }
+
+    const gridArray = instrument.get('grid') as Y.Array<Y.Array<number>>;
+    if (!gridArray) return;
+
     this.ydoc.transact(() => {
       for (let i = 0; i < Math.min(grid.length, 8); i++) {
-        const rowArray = this.grid.get(i);
+        const rowArray = gridArray.get(i);
         for (let j = 0; j < Math.min(grid[i].length, 16); j++) {
           rowArray.delete(j, 1);
           rowArray.insert(j, [grid[i][j] ? 1 : 0]);
@@ -152,47 +185,53 @@ export class SyncManager {
   }
 
   // Listen to grid changes from remote users
-  onGridChange(callback: (row: number, col: number, value: boolean) => void) {
-    // Set up a deep observer on the entire grid
+  onGridChange(callback: (instrumentId: string, row: number, col: number, value: boolean) => void) {
+    // Set up a deep observer on all instruments
     const setupObservers = () => {
-      if (!this.grid || this.grid.length === 0) {
-        console.warn('Grid not ready for observers');
-        return;
-      }
+      ['drums', 'lead1'].forEach((instrumentId) => {
+        const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+        if (!instrument) return;
 
-      // Observe changes within each row
-      for (let rowIndex = 0; rowIndex < this.grid.length; rowIndex++) {
-        const rowArray = this.grid.get(rowIndex);
-        if (!rowArray) continue;
+        const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
+        if (!grid || grid.length === 0) {
+          console.warn(`Grid not ready for ${instrumentId}`);
+          return;
+        }
 
-        rowArray.observe((event) => {
-          // Don't trigger callback for local changes (origin === 'local')
-          if (event.transaction.origin === 'local') return;
+        // Observe changes within each row
+        for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+          const rowArray = grid.get(rowIndex);
+          if (!rowArray) continue;
 
-          console.log(`Grid change detected in row ${rowIndex}`, event.changes.delta);
+          rowArray.observe((event: any) => {
+            // Don't trigger callback for local changes (origin === 'local')
+            if (event.transaction.origin === 'local') return;
 
-          // Check what changed in this row using the delta
-          let position = 0;
-          event.changes.delta.forEach((change: any) => {
-            if (change.retain !== undefined) {
-              // Skip retained items
-              position += change.retain;
-            } else if (change.delete !== undefined) {
-              // Items were deleted - skip to next position
-              // position stays the same because items are deleted
-            } else if (change.insert !== undefined) {
-              // Items were inserted - these are the changes we care about
-              const insertedItems = Array.isArray(change.insert) ? change.insert : [change.insert];
-              insertedItems.forEach((item: number) => {
-                const value = item === 1;
-                console.log(`Calling callback for cell [${rowIndex}, ${position}] = ${value}`);
-                callback(rowIndex, position, value);
-                position++;
-              });
-            }
+            console.log(`Grid change detected in ${instrumentId} row ${rowIndex}`, event.changes.delta);
+
+            // Check what changed in this row using the delta
+            let position = 0;
+            event.changes.delta.forEach((change: any) => {
+              if (change.retain !== undefined) {
+                // Skip retained items
+                position += change.retain;
+              } else if (change.delete !== undefined) {
+                // Items were deleted - skip to next position
+                // position stays the same because items are deleted
+              } else if (change.insert !== undefined) {
+                // Items were inserted - these are the changes we care about
+                const insertedItems = Array.isArray(change.insert) ? change.insert : [change.insert];
+                insertedItems.forEach((item: number) => {
+                  const value = item === 1;
+                  console.log(`Calling callback for cell [${instrumentId}, ${rowIndex}, ${position}] = ${value}`);
+                  callback(instrumentId, rowIndex, position, value);
+                  position++;
+                });
+              }
+            });
           });
-        });
-      }
+        }
+      });
     };
 
     // Set up observers immediately
@@ -230,27 +269,46 @@ export class SyncManager {
     });
   }
 
-  // Get current kit
+  // Get current kit for drums
   getKit(): string {
-    return this.kit.get('name') || 'kit_a';
+    const drums = this.instruments.get('drums') as Y.Map<any>;
+    if (!drums) return 'kit_a';
+
+    const kit = drums.get('kit') as Y.Map<any>;
+    return kit?.get('name') || 'kit_a';
   }
 
-  // Set kit
+  // Set kit for drums
   setKit(kitName: string) {
     console.log(`setKit called with: ${kitName}`);
+    const drums = this.instruments.get('drums') as Y.Map<any>;
+    if (!drums) return;
+
+    let kit = drums.get('kit') as Y.Map<any>;
+    if (!kit) {
+      kit = new Y.Map();
+      drums.set('kit', kit);
+    }
+
     this.ydoc.transact(() => {
-      this.kit.set('name', kitName);
+      kit.set('name', kitName);
     }, 'local');
   }
 
   // Listen to kit changes from remote users
   onKitChange(callback: (kitName: string) => void) {
     const setupKitObserver = () => {
-      console.log('Setting up kit observer on', this.kit);
-      this.kit.observe((event) => {
-        console.log('Kit change event:', event.transaction.origin, this.kit.get('name'));
+      const drums = this.instruments.get('drums') as Y.Map<any>;
+      if (!drums) return;
+
+      const kit = drums.get('kit') as Y.Map<any>;
+      if (!kit) return;
+
+      console.log('Setting up kit observer on', kit);
+      kit.observe((event: any) => {
+        console.log('Kit change event:', event.transaction.origin, kit.get('name'));
         if (event.transaction.origin === 'local') return;
-        const kitName = this.kit.get('name');
+        const kitName = kit.get('name');
         if (kitName) {
           console.log(`onKitChange: Calling callback with kit "${kitName}"`);
           callback(kitName);

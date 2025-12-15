@@ -1,13 +1,13 @@
 import { AudioEngine } from './audio';
 import { SyncManager } from './sync';
+import { Instrument } from './instrument';
+import { INSTRUMENTS, DRUM_SAMPLES } from './types';
 
-export const SAMPLES = [
-  'kick', 'snare', 'hihat', 'openhat', 'clap', 'boom', 'ride', 'tink'
-];
+export const SAMPLES = DRUM_SAMPLES;
 
 export class Sequencer {
   private audio: AudioEngine;
-  private grid: boolean[][];
+  private instruments: Map<string, Instrument>;
   private currentStep: number;
   private intervalId: number | null;
   private bpm: number;
@@ -16,10 +16,13 @@ export class Sequencer {
   constructor(audio: AudioEngine, sync?: SyncManager) {
     this.audio = audio;
     this.sync = sync || null;
-    this.grid = Array(8).fill(null).map(() => Array(16).fill(false));
+    this.instruments = new Map();
     this.currentStep = 0;
     this.intervalId = null;
     this.bpm = 120;
+
+    // Initialize instruments
+    this.initializeInstruments();
 
     // If sync is provided, initialize from synced state and set up listeners
     if (this.sync) {
@@ -27,25 +30,53 @@ export class Sequencer {
     }
   }
 
+  private initializeInstruments() {
+    // Create drum instrument
+    const drumsInstrument = new Instrument(INSTRUMENTS.drums, this.audio);
+    this.instruments.set('drums', drumsInstrument);
+
+    // Create lead1 instrument
+    const lead1Instrument = new Instrument(INSTRUMENTS.lead1, this.audio);
+    this.instruments.set('lead1', lead1Instrument);
+  }
+
   private initializeFromSync() {
     if (!this.sync) return;
 
-    // Listen for connection status changes to refresh grid when synced
+    // Listen for connection status changes to refresh state when synced
     this.sync.onConnectionChange((status) => {
       if (status.synced) {
-        // Reload grid state after sync completes
-        this.grid = this.sync!.getGrid();
+        // Reload state after sync completes
+        const drumsGrid = this.sync!.getGrid('drums');
+        const lead1Grid = this.sync!.getGrid('lead1');
         this.bpm = this.sync!.getBpm();
+
+        const drumsInstrument = this.instruments.get('drums');
+        const lead1Instrument = this.instruments.get('lead1');
+
+        if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
+        if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
       }
     });
 
     // Load initial state from Yjs
-    this.grid = this.sync.getGrid();
+    const drumsGrid = this.sync.getGrid('drums');
+    const lead1Grid = this.sync.getGrid('lead1');
     this.bpm = this.sync.getBpm();
 
+    const drumsInstrument = this.instruments.get('drums');
+    const lead1Instrument = this.instruments.get('lead1');
+
+    if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
+    if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
+
     // Listen to remote grid changes
-    this.sync.onGridChange((row, col, value) => {
-      this.grid[row][col] = value;
+    this.sync.onGridChange((instrumentId, row, col, value) => {
+      const instrument = this.instruments.get(instrumentId);
+      if (instrument) {
+        const grid = instrument.getGrid();
+        grid[row][col] = value;
+      }
     });
 
     // Listen to remote BPM changes
@@ -59,17 +90,29 @@ export class Sequencer {
     });
   }
 
-  toggle(row: number, col: number) {
-    this.grid[row][col] = !this.grid[row][col];
+  getInstrument(id: string): Instrument | undefined {
+    return this.instruments.get(id);
+  }
+
+  getAllInstruments(): Instrument[] {
+    return Array.from(this.instruments.values());
+  }
+
+  toggle(instrumentId: string, row: number, col: number) {
+    const instrument = this.instruments.get(instrumentId);
+    if (!instrument) return;
+
+    instrument.toggle(row, col);
 
     // Sync to other users if collaborative mode is enabled
     if (this.sync) {
-      this.sync.toggleCell(row, col);
+      this.sync.toggleCell(instrumentId, row, col);
     }
   }
 
-  isActive(row: number, col: number) {
-    return this.grid[row][col];
+  isActive(instrumentId: string, row: number, col: number) {
+    const instrument = this.instruments.get(instrumentId);
+    return instrument ? instrument.isActive(row, col) : false;
   }
 
   setBpm(bpm: number) {
@@ -113,11 +156,10 @@ export class Sequencer {
   }
 
   private tick() {
-    for (let row = 0; row < 8; row++) {
-      if (this.grid[row][this.currentStep]) {
-        this.audio.play(SAMPLES[row]);
-      }
-    }
+    // Play all instruments
+    this.instruments.forEach((instrument) => {
+      instrument.playStep(this.currentStep);
+    });
     this.currentStep = (this.currentStep + 1) % 16;
   }
 

@@ -1,26 +1,21 @@
 import './style.css';
 import { AudioEngine } from './audio';
-import { Sequencer, SAMPLES } from './sequencer';
+import { Sequencer } from './sequencer';
 import { UI } from './ui';
 import { SyncManager } from './sync';
 import { Lobby } from './lobby';
 
-export const KITS = ['kit_a', 'kit_b', 'kit_c'];
-
 let isLoadingKitFromSync = false;
 
-async function loadKit(audio: AudioEngine, kit: string) {
+async function loadKit(sequencer: Sequencer, kit: string) {
   console.log(`loadKit: Loading kit "${kit}"`);
-  audio.clear();
+
   try {
-    await Promise.all(
-      SAMPLES.map(async (name) => {
-        const path = `/sounds/${kit}/${name}.wav`;
-        console.log(`loadKit: Loading sample ${path}`);
-        await audio.loadSample(name, path);
-      })
-    );
-    console.log(`loadKit: All samples loaded for kit "${kit}"`);
+    const drumsInstrument = sequencer.getInstrument('drums');
+    if (drumsInstrument) {
+      await drumsInstrument.loadSamples(kit);
+      console.log(`loadKit: All samples loaded for kit "${kit}"`);
+    }
   } catch (error) {
     console.error(`loadKit: Error loading kit "${kit}":`, error);
     throw error;
@@ -57,12 +52,13 @@ async function initRoom(roomId: string) {
     partyKitHost,
   });
 
-  // Load initial kit from sync or default
-  const initialKit = sync.getKit();
-  await loadKit(audio, initialKit);
-
   // Create sequencer with sync enabled
   const sequencer = new Sequencer(audio, sync);
+
+  // Load initial kit from sync or default
+  const initialKit = sync.getKit();
+  await loadKit(sequencer, initialKit);
+
   const app = document.querySelector<HTMLDivElement>('#app')!;
 
   // Handle kit changes
@@ -71,7 +67,7 @@ async function initRoom(roomId: string) {
     if (!isLoadingKitFromSync) {
       sync.setKit(kit);
     }
-    await loadKit(audio, kit);
+    await loadKit(sequencer, kit);
   };
 
   const ui = new UI(sequencer, app, onKitChange);
@@ -81,7 +77,7 @@ async function initRoom(roomId: string) {
     console.log(`main.ts: Remote kit change detected: "${kitName}"`);
     isLoadingKitFromSync = true;
     try {
-      await loadKit(audio, kitName);
+      await loadKit(sequencer, kitName);
       // Update UI kit selector to reflect the change
       ui.updateKitSelector(kitName);
       console.log(`main.ts: Kit "${kitName}" loaded successfully`);

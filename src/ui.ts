@@ -1,5 +1,5 @@
 import { Sequencer, SAMPLES } from './sequencer';
-import { KITS } from './main';
+import { KITS } from './types';
 
 export class UI {
   private sequencer: Sequencer;
@@ -82,7 +82,8 @@ export class UI {
       if (target.classList.contains('cell')) {
         const row = parseInt(target.dataset.row!);
         const col = parseInt(target.dataset.col!);
-        this.sequencer.toggle(row, col);
+        // Currently only showing drums instrument
+        this.sequencer.toggle('drums', row, col);
         target.classList.toggle('active');
       }
 
@@ -184,8 +185,11 @@ export class UI {
     });
 
     // Listen to remote grid changes and update UI in real-time
-    sync.onGridChange((row, col, value) => {
-      console.log(`UI: Grid change received [${row}, ${col}] = ${value}`);
+    sync.onGridChange((instrumentId, row, col, value) => {
+      // Currently only showing drums instrument in UI
+      if (instrumentId !== 'drums') return;
+
+      console.log(`UI: Grid change received [${instrumentId}, ${row}, ${col}] = ${value}`);
       const cell = this.container.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
       if (cell) {
         console.log(`UI: Updating cell visual`);
@@ -212,10 +216,11 @@ export class UI {
 
   private updateGridDisplay() {
     // Update all cells to reflect current sequencer state
+    // Currently only showing drums instrument
     this.container.querySelectorAll('.cell').forEach((cell) => {
       const row = parseInt((cell as HTMLElement).dataset.row!);
       const col = parseInt((cell as HTMLElement).dataset.col!);
-      const isActive = this.sequencer.isActive(row, col);
+      const isActive = this.sequencer.isActive('drums', row, col);
       cell.classList.toggle('active', isActive);
     });
   }
