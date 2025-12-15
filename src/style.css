@@ -121,10 +121,31 @@ button {
   height: 40px;
   background: transparent;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #play:hover {
-  background: #45a049;
+  transform: scale(1.15);
+  filter: brightness(1.5);
+}
+
+#play.playing {
+  animation: pulse 0.15s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(255, 152, 0, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255, 152, 0, 1)) brightness(1.5);
+    transform: scale(1.1);
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(255, 152, 0, 0));
+  }
 }
 
 #stop {
@@ -132,10 +153,14 @@ button {
   height: 40px;
   background: transparent;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #stop:hover {
-  background: #da190b;
+  transform: scale(1.15);
+  filter: brightness(1.5);
 }
 
 .grid {

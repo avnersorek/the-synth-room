@@ -57,10 +57,24 @@ export class UI {
         </div>
         <div class="panel">
           <div class="controls">
-            <button id="play">►</button>
-            <button id="stop">⏹</button>
+            <button id="play">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
+                <path d="M20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L7.59662 21.6145C5.53435 22.736 3 21.2763 3 18.9671L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258Z" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+            <button id="stop">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
+                <path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7" />
-            <label for="volume">Volume</label>
+            <label for="volume">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
+                <path d="M6 1H8V15H6L2 11H0V5H2L6 1Z" fill="currentColor"/>
+                <path d="M14 8C14 5.79086 12.2091 4 10 4V2C13.3137 2 16 4.68629 16 8C16 11.3137 13.3137 14 10 14V12C12.2091 12 14 10.2091 14 8Z" fill="currentColor"/>
+                <path d="M12 8C12 9.10457 11.1046 10 10 10V6C11.1046 6 12 6.89543 12 8Z" fill="currentColor"/>
+              </svg>
+            </label>
           </div>
           <div>
             <input type="number" id="bpm" value="120" min="40" max="240" />
@@ -170,8 +184,25 @@ export class UI {
   }
 
   private startUpdateLoop() {
+    let lastStep = -1;
+
     setInterval(() => {
       const currentStep = this.sequencer.getCurrentStep();
+
+      // Pulse play button every 4 beats (on the downbeat) when playing
+      if (this.sequencer.isPlaying() && currentStep % 4 === 0 && currentStep !== lastStep) {
+        const playButton = this.container.querySelector('#play') as HTMLElement;
+        if (playButton) {
+          // Remove and re-add class to restart animation
+          playButton.classList.remove('playing');
+          // Force reflow to restart animation
+          void playButton.offsetWidth;
+          playButton.classList.add('playing');
+        }
+        lastStep = currentStep;
+      } else if (currentStep % 4 !== 0) {
+        lastStep = -1; // Reset tracker when not on downbeat
+      }
 
       // Always update drums since they're always visible
       const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
