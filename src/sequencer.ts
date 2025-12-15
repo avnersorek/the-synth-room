@@ -86,6 +86,7 @@ export class Sequencer {
     // Listen to remote BPM changes
     this.sync.onBpmChange((value) => {
       this.bpm = value;
+      Tone.getTransport().bpm.value = value;
       // If playing, restart with new BPM
       if (this.isPlaying()) {
         this.stop();

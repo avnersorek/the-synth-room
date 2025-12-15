@@ -1,4 +1,5 @@
 import './style.css';
+import './components/glowcard.css';
 import { AudioEngine } from './audio';
 import { Sequencer } from './sequencer';
 import { UI } from './ui';

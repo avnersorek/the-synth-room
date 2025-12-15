@@ -16,6 +16,7 @@ export class SyncManager {
   private provider: PartyKitProvider;
   private instruments!: Y.Map<any>;
   private bpm!: Y.Map<any>;
+  private kit!: Y.Map<any>;
   private connectionCallbacks: ((status: ConnectionStatus) => void)[] = [];
   private connectionStatus: ConnectionStatus = { connected: false, synced: false };
 
@@ -71,11 +72,13 @@ export class SyncManager {
       }
       drumsMap.set('grid', gridArray);
 
-      const kitMap = new Y.Map();
-      kitMap.set('name', 'kit_a');
-      drumsMap.set('kit', kitMap);
-
       this.instruments.set('drums', drumsMap);
+    }
+
+    // Initialize kit map (shared across the app, not per-instrument)
+    this.kit = this.ydoc.getMap('kit');
+    if (!this.kit.has('name')) {
+      this.kit.set('name', 'kit_a');
     }
 
     // Initialize lead1 instrument
@@ -105,6 +108,7 @@ export class SyncManager {
     // Refresh references after sync to ensure we have the latest data
     this.instruments = this.ydoc.getMap('instruments');
     this.bpm = this.ydoc.getMap('bpm');
+    this.kit = this.ydoc.getMap('kit');
   }
 
   // Get current grid state for an instrument (8x16 boolean array)
@@ -269,46 +273,27 @@ export class SyncManager {
     });
   }
 
-  // Get current kit for drums
+  // Get current kit
   getKit(): string {
-    const drums = this.instruments.get('drums') as Y.Map<any>;
-    if (!drums) return 'kit_a';
-
-    const kit = drums.get('kit') as Y.Map<any>;
-    return kit?.get('name') || 'kit_a';
+    return this.kit.get('name') || 'kit_a';
   }
 
-  // Set kit for drums
+  // Set kit
   setKit(kitName: string) {
     console.log(`setKit called with: ${kitName}`);
-    const drums = this.instruments.get('drums') as Y.Map<any>;
-    if (!drums) return;
-
-    let kit = drums.get('kit') as Y.Map<any>;
-    if (!kit) {
-      kit = new Y.Map();
-      drums.set('kit', kit);
-    }
-
     this.ydoc.transact(() => {
-      kit.set('name', kitName);
+      this.kit.set('name', kitName);
     }, 'local');
   }
 
   // Listen to kit changes from remote users
   onKitChange(callback: (kitName: string) => void) {
     const setupKitObserver = () => {
-      const drums = this.instruments.get('drums') as Y.Map<any>;
-      if (!drums) return;
-
-      const kit = drums.get('kit') as Y.Map<any>;
-      if (!kit) return;
-
-      console.log('Setting up kit observer on', kit);
-      kit.observe((event: any) => {
-        console.log('Kit change event:', event.transaction.origin, kit.get('name'));
+      console.log('Setting up kit observer on', this.kit);
+      this.kit.observe((event) => {
+        console.log('Kit change event:', event.transaction.origin, this.kit.get('name'));
         if (event.transaction.origin === 'local') return;
-        const kitName = kit.get('name');
+        const kitName = this.kit.get('name');
         if (kitName) {
           console.log(`onKitChange: Calling callback with kit "${kitName}"`);
           callback(kitName);
