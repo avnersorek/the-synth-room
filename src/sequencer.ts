@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import { AudioEngine } from './audio';
-import { SyncManager } from './sync';
+import { SyncManager } from './sync/SyncManager';
 import { Instrument } from './instrument';
 import { INSTRUMENTS, DRUM_SAMPLES } from './types';
 

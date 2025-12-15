@@ -1,12 +1,18 @@
+/**
+ * Lead synth instrument component
+ * Extends AbstractGridInstrument for grid-based functionality
+ */
+
 import { Sequencer } from '../sequencer';
 import { SYNTH_TYPES, LEAD_NOTES } from '../types';
+import { AbstractGridInstrument } from './base/AbstractGridInstrument';
+import { renderCell, renderLabel } from './base/GridRenderer';
 
-export class LeadInstrument {
-  private sequencer: Sequencer;
+export class LeadInstrument extends AbstractGridInstrument {
   private onSynthChange: (synthType: string) => void;
 
   constructor(sequencer: Sequencer, onSynthChange: (synthType: string) => void) {
-    this.sequencer = sequencer;
+    super(sequencer, 'lead1');
     this.onSynthChange = onSynthChange;
   }
 
@@ -26,7 +32,7 @@ export class LeadInstrument {
     `;
   }
 
-  private renderGrid(): string {
+  protected renderGrid(): string {
     let html = '';
 
     // Render notes in reverse order (C4 at top, C2 at bottom) like a piano roll
@@ -36,10 +42,9 @@ export class LeadInstrument {
       const keyClass = isSharp ? 'black-key' : 'white-key';
 
       html += `<div class="row lead-row ${keyClass}">`;
-      html += `<div class="label lead-label">${noteName}</div>`;
+      html += renderLabel(noteName, 'lead-label');
       for (let col = 0; col < 16; col++) {
-        const beatGroup = Math.floor(col / 4);
-        html += `<div class="cell lead-cell beat-${beatGroup}" data-row="${row}" data-col="${col}"></div>`;
+        html += renderCell(row, col, 'lead-cell');
       }
       html += `</div>`;
     }
@@ -47,19 +52,7 @@ export class LeadInstrument {
     return html;
   }
 
-  attachEvents(container: HTMLElement) {
-    // Cell click handler
-    container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-
-      if (target.classList.contains('cell')) {
-        const row = parseInt(target.dataset.row!);
-        const col = parseInt(target.dataset.col!);
-        this.sequencer.toggle('lead1', row, col);
-        target.classList.toggle('active');
-      }
-    });
-
+  protected attachAdditionalEvents(container: HTMLElement): void {
     // Synth type selector change handler
     const synthSelect = container.querySelector('#synth-type') as HTMLSelectElement;
     if (synthSelect) {
@@ -69,29 +62,7 @@ export class LeadInstrument {
     }
   }
 
-  updateGridDisplay(container: HTMLElement) {
-    // Update all cells to reflect current sequencer state
-    container.querySelectorAll('.cell').forEach((cell) => {
-      const row = parseInt((cell as HTMLElement).dataset.row!);
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      const isActive = this.sequencer.isActive('lead1', row, col);
-      cell.classList.toggle('active', isActive);
-    });
-  }
-
-  updateCurrentStep(container: HTMLElement, currentStep: number) {
-    // Update which step is currently playing
-    const isPlaying = this.sequencer.isPlaying();
-    container.querySelectorAll('.cell').forEach((cell) => {
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      cell.classList.toggle('current', isPlaying && col === currentStep);
-    });
-  }
-
-  updateSynthSelector(container: HTMLElement, synthType: string) {
-    const synthSelect = container.querySelector('#synth-type') as HTMLSelectElement;
-    if (synthSelect) {
-      synthSelect.value = synthType;
-    }
+  updateSynthSelector(container: HTMLElement, synthType: string): void {
+    this.updateSelector(container, 'synth-type', synthType);
   }
 }

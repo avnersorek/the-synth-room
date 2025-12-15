@@ -1,12 +1,18 @@
+/**
+ * Drum instrument component
+ * Extends AbstractGridInstrument for grid-based functionality
+ */
+
 import { Sequencer, SAMPLES } from '../sequencer';
 import { KITS } from '../types';
+import { AbstractGridInstrument } from './base/AbstractGridInstrument';
+import { renderCell, renderLabel } from './base/GridRenderer';
 
-export class DrumInstrument {
-  private sequencer: Sequencer;
+export class DrumInstrument extends AbstractGridInstrument {
   private onKitChange: (kit: string) => Promise<void>;
 
   constructor(sequencer: Sequencer, onKitChange: (kit: string) => Promise<void>) {
-    this.sequencer = sequencer;
+    super(sequencer, 'drums');
     this.onKitChange = onKitChange;
   }
 
@@ -26,15 +32,14 @@ export class DrumInstrument {
     `;
   }
 
-  private renderGrid(): string {
+  protected renderGrid(): string {
     let html = '';
 
     for (let row = 0; row < 8; row++) {
       html += `<div class="row">`;
-      html += `<div class="label">${SAMPLES[row]}</div>`;
+      html += renderLabel(SAMPLES[row]);
       for (let col = 0; col < 16; col++) {
-        const beatGroup = Math.floor(col / 4);
-        html += `<div class="cell beat-${beatGroup}" data-row="${row}" data-col="${col}"></div>`;
+        html += renderCell(row, col);
       }
       html += `</div>`;
     }
@@ -42,19 +47,7 @@ export class DrumInstrument {
     return html;
   }
 
-  attachEvents(container: HTMLElement) {
-    // Cell click handler
-    container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-
-      if (target.classList.contains('cell')) {
-        const row = parseInt(target.dataset.row!);
-        const col = parseInt(target.dataset.col!);
-        this.sequencer.toggle('drums', row, col);
-        target.classList.toggle('active');
-      }
-    });
-
+  protected attachAdditionalEvents(container: HTMLElement): void {
     // Kit selector change handler
     const kitSelect = container.querySelector('#kit') as HTMLSelectElement;
     if (kitSelect) {
@@ -64,29 +57,7 @@ export class DrumInstrument {
     }
   }
 
-  updateGridDisplay(container: HTMLElement) {
-    // Update all cells to reflect current sequencer state
-    container.querySelectorAll('.cell').forEach((cell) => {
-      const row = parseInt((cell as HTMLElement).dataset.row!);
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      const isActive = this.sequencer.isActive('drums', row, col);
-      cell.classList.toggle('active', isActive);
-    });
-  }
-
-  updateCurrentStep(container: HTMLElement, currentStep: number) {
-    // Update which step is currently playing
-    const isPlaying = this.sequencer.isPlaying();
-    container.querySelectorAll('.cell').forEach((cell) => {
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      cell.classList.toggle('current', isPlaying && col === currentStep);
-    });
-  }
-
-  updateKitSelector(container: HTMLElement, kitName: string) {
-    const kitSelect = container.querySelector('#kit') as HTMLSelectElement;
-    if (kitSelect) {
-      kitSelect.value = kitName;
-    }
+  updateKitSelector(container: HTMLElement, kitName: string): void {
+    this.updateSelector(container, 'kit', kitName);
   }
 }

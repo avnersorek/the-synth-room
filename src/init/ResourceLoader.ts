@@ -1,0 +1,69 @@
+/**
+ * Manages loading of resources (kits, synth types) with internal state management
+ * Eliminates the need for global loading flags
+ */
+
+import { Sequencer } from '../sequencer';
+import { AudioEngine } from '../audio';
+
+export class ResourceLoader {
+  private isLoadingKitFromSync = false;
+  private isLoadingSynthTypeFromSync = false;
+
+  /**
+   * Load a drum kit
+   */
+  async loadKit(sequencer: Sequencer, kit: string): Promise<void> {
+    console.log(`loadKit: Loading kit "${kit}"`);
+
+    try {
+      const drumsInstrument = sequencer.getInstrument('drums');
+      if (drumsInstrument) {
+        await drumsInstrument.loadSamples(kit);
+        console.log(`loadKit: All samples loaded for kit "${kit}"`);
+      }
+    } catch (error) {
+      console.error(`loadKit: Error loading kit "${kit}":`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load a synth type for the lead instrument
+   */
+  loadSynthType(sequencer: Sequencer, audio: AudioEngine, synthType: string): void {
+    const lead1 = sequencer.getInstrument('lead1');
+    if (lead1) {
+      lead1.setParameter('synthType', synthType);
+      audio.createSynth('lead1', synthType as any);
+    }
+  }
+
+  /**
+   * Check if currently loading kit from sync
+   */
+  isLoadingKit(): boolean {
+    return this.isLoadingKitFromSync;
+  }
+
+  /**
+   * Check if currently loading synth type from sync
+   */
+  isLoadingSynthType(): boolean {
+    return this.isLoadingSynthTypeFromSync;
+  }
+
+  /**
+   * Set loading kit flag
+   */
+  setLoadingKit(loading: boolean): void {
+    this.isLoadingKitFromSync = loading;
+  }
+
+  /**
+   * Set loading synth type flag
+   */
+  setLoadingSynthType(loading: boolean): void {
+    this.isLoadingSynthTypeFromSync = loading;
+  }
+}
