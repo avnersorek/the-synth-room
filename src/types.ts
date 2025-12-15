@@ -24,8 +24,11 @@ export interface DrumParameters extends InstrumentParameters {
   volume: number;
 }
 
+export type SynthType = 'FMSynth' | 'AMSynth' | 'Synth';
+
 export interface LeadParameters extends InstrumentParameters {
   volume: number;
+  synthType?: SynthType;
   attack?: number;
   decay?: number;
   sustain?: number;
@@ -45,10 +48,14 @@ export const DRUM_SAMPLES = [
 ];
 
 export const LEAD_NOTES = [
-  'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'
+  'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2',
+  'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3',
+  'C4'
 ];
 
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
+
+export const SYNTH_TYPES: SynthType[] = ['FMSynth', 'AMSynth', 'Synth'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
   drums: {
@@ -67,10 +74,11 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
     type: 'lead',
     name: 'Lead 1',
     samples: LEAD_NOTES.map(note => ({ name: note, path: '' })),
-    gridRows: 8,
+    gridRows: 24,
     gridCols: 16,
     parameters: {
       volume: 0.5,
+      synthType: 'Synth',
       attack: 0.01,
       decay: 0.1,
       sustain: 0.7,

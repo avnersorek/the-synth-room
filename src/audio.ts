@@ -1,11 +1,14 @@
 import * as Tone from 'tone';
+import type { SynthType } from './types';
 
 export class AudioEngine {
   private samplers: Map<string, Tone.Sampler>;
+  private synths: Map<string, Tone.PolySynth>;
   private volume: Tone.Volume;
 
   constructor() {
     this.samplers = new Map();
+    this.synths = new Map();
     this.volume = new Tone.Volume(0).toDestination();
   }
 
@@ -23,6 +26,33 @@ export class AudioEngine {
     this.samplers.set(name, sampler);
   }
 
+  createSynth(instrumentId: string, synthType: SynthType) {
+    // Dispose of existing synth if it exists
+    const existingSynth = this.synths.get(instrumentId);
+    if (existingSynth) {
+      existingSynth.dispose();
+    }
+
+    // Create the appropriate synth type
+    let synth: Tone.PolySynth;
+    switch (synthType) {
+      case 'FMSynth':
+        synth = new Tone.PolySynth(Tone.FMSynth).connect(this.volume);
+        break;
+      case 'AMSynth':
+        synth = new Tone.PolySynth(Tone.AMSynth).connect(this.volume);
+        break;
+      case 'Synth':
+        synth = new Tone.PolySynth(Tone.Synth).connect(this.volume);
+        break;
+      default:
+        synth = new Tone.PolySynth(Tone.FMSynth).connect(this.volume);
+    }
+
+    this.synths.set(instrumentId, synth);
+    console.log(`Created ${synthType} for ${instrumentId}`);
+  }
+
   play(name: string, time?: number) {
     const sampler = this.samplers.get(name);
     if (!sampler) return;
@@ -33,6 +63,18 @@ export class AudioEngine {
       sampler.triggerAttackRelease('C3', '16n', time);
     } else {
       sampler.triggerAttackRelease('C3', '16n');
+    }
+  }
+
+  playNote(instrumentId: string, note: string, time?: number) {
+    const synth = this.synths.get(instrumentId);
+    if (!synth) return;
+
+    // Play the note with the synth
+    if (time !== undefined) {
+      synth.triggerAttackRelease(note, '16n', time);
+    } else {
+      synth.triggerAttackRelease(note, '16n');
     }
   }
 
@@ -49,6 +91,8 @@ export class AudioEngine {
   clear() {
     this.samplers.forEach(sampler => sampler.dispose());
     this.samplers.clear();
+    this.synths.forEach(synth => synth.dispose());
+    this.synths.clear();
   }
 
   async start() {

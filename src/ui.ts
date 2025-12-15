@@ -2,6 +2,7 @@ import { Sequencer } from './sequencer';
 import { INSTRUMENTS } from './types';
 import { InstrumentPanel } from './components/InstrumentPanel';
 import { DrumInstrument } from './components/DrumInstrument';
+import { LeadInstrument } from './components/LeadInstrument';
 
 export class UI {
   private sequencer: Sequencer;
@@ -9,14 +10,16 @@ export class UI {
   private audioStarted: boolean = false;
   private currentInstrumentId: string = 'drums';
   private drumInstrument: DrumInstrument;
+  private leadInstrument: LeadInstrument;
   private instrumentPanel: InstrumentPanel;
 
-  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>) {
+  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>, onSynthChange: (synthType: string) => void) {
     this.sequencer = sequencer;
     this.container = container;
 
     // Initialize components
     this.drumInstrument = new DrumInstrument(sequencer, onKitChange);
+    this.leadInstrument = new LeadInstrument(sequencer, onSynthChange);
 
     // Get all available instruments from config
     const instruments = Object.values(INSTRUMENTS);
@@ -32,11 +35,7 @@ export class UI {
     if (instrumentId === 'drums') {
       return this.drumInstrument.render();
     } else if (instrumentId === 'lead1') {
-      return `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 300px; opacity: 0.5;">
-          <p style="font-size: 1.2rem; text-align: center;">Lead synth coming soon...</p>
-        </div>
-      `;
+      return this.leadInstrument.render();
     }
     return '';
   }
@@ -86,9 +85,11 @@ export class UI {
       this.drumInstrument.updateGridDisplay(drumCard);
     }
 
-    // Attach events for other active instruments
-    if (this.currentInstrumentId === 'lead1') {
-      // Future: attach lead1 events
+    // Always attach lead1 events since lead1 is always visible
+    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
+    if (leadCard) {
+      this.leadInstrument.attachEvents(leadCard);
+      this.leadInstrument.updateGridDisplay(leadCard);
     }
   }
 
@@ -178,8 +179,11 @@ export class UI {
         this.drumInstrument.updateCurrentStep(drumCard, currentStep);
       }
 
-      // Update other active instruments
-      // Future: if (this.currentInstrumentId === 'lead1') { ... }
+      // Always update lead1 since it's always visible
+      const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
+      if (leadCard) {
+        this.leadInstrument.updateCurrentStep(leadCard, currentStep);
+      }
     }, 50);
   }
 
@@ -247,13 +251,14 @@ export class UI {
 
     // Listen to remote grid changes and update UI in real-time
     sync.onGridChange((instrumentId, row, col, value) => {
-      // Only update if this is the currently displayed instrument
-      if (instrumentId !== this.currentInstrumentId) return;
+      // Only update if this is an always-visible instrument (drums, lead1) or the currently displayed instrument
+      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== this.currentInstrumentId) return;
 
       console.log(`UI: Grid change received [${instrumentId}, ${row}, ${col}] = ${value}`);
 
-      if (this.currentInstrumentId === 'drums') {
-        const cell = this.container.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+      const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`);
+      if (instrumentCard) {
+        const cell = instrumentCard.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
         if (cell) {
           console.log(`UI: Updating cell visual`);
           cell.classList.toggle('active', value);
@@ -285,7 +290,10 @@ export class UI {
       this.drumInstrument.updateGridDisplay(drumCard);
     }
 
-    // Update other active instruments if needed
-    // Future: if (this.currentInstrumentId === 'lead1') { ... }
+    // Always update lead1 grid since lead1 is always visible
+    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
+    if (leadCard) {
+      this.leadInstrument.updateGridDisplay(leadCard);
+    }
   }
 }

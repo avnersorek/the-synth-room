@@ -60,6 +60,12 @@ async function initRoom(roomId: string) {
   const initialKit = sync.getKit();
   await loadKit(sequencer, initialKit);
 
+  // Initialize lead synth
+  const lead1Instrument = sequencer.getInstrument('lead1');
+  if (lead1Instrument) {
+    await lead1Instrument.loadSamples();
+  }
+
   const app = document.querySelector<HTMLDivElement>('#app')!;
 
   // Handle kit changes
@@ -71,7 +77,16 @@ async function initRoom(roomId: string) {
     await loadKit(sequencer, kit);
   };
 
-  const ui = new UI(sequencer, app, onKitChange);
+  // Handle synth type changes
+  const onSynthChange = (synthType: string) => {
+    const lead1 = sequencer.getInstrument('lead1');
+    if (lead1) {
+      lead1.setParameter('synthType', synthType);
+      audio.createSynth('lead1', synthType as any);
+    }
+  };
+
+  const ui = new UI(sequencer, app, onKitChange, onSynthChange);
 
   // Listen to remote kit changes
   sync.onKitChange(async (kitName) => {

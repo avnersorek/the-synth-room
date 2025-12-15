@@ -172,7 +172,7 @@ button {
 }
 
 .cell.beat-1 {
-  background: #242424;
+  background: #1f1f1f;
 }
 
 .cell.beat-2 {
@@ -180,14 +180,18 @@ button {
 }
 
 .cell.beat-3 {
-  background: #242424;
+  background: #1f1f1f;
 }
 
 .cell:hover {
   border-color: #666;
 }
 
-.cell.active {
+.cell.active,
+.cell.active.beat-0,
+.cell.active.beat-1,
+.cell.active.beat-2,
+.cell.active.beat-3 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -377,4 +381,148 @@ button {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
+}
+
+/* Instrument Controls */
+.drum-controls, .lead-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.drum-controls label, .lead-controls label {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.drum-controls select, .lead-controls select {
+  padding: 6px 12px;
+  font-size: 14px;
+  background: #2a2a2a;
+  color: #fff;
+  border: 2px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drum-controls select:hover, .lead-controls select:hover {
+  border-color: #666;
+}
+
+.drum-controls select:focus, .lead-controls select:focus {
+  outline: none;
+  border-color: #ff9800;
+}
+
+/* Lead Instrument Specific */
+.lead-instrument .grid {
+  max-height: 600px;
+  overflow-y: auto;
+  gap: 0;
+}
+
+.lead-row {
+  gap: 2px;
+  height: 24px;
+  margin: 0;
+}
+
+.lead-row.white-key {
+  background: #f5f5f5;
+}
+
+.lead-row.black-key {
+  background: #2a2a2a;
+}
+
+.lead-label {
+  width: 50px;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+
+.white-key .lead-label {
+  color: #333;
+}
+
+.black-key .lead-label {
+  color: #999;
+}
+
+.lead-cell {
+  width: 32px;
+  height: 20px;
+  border-radius: 2px;
+}
+
+.white-key .lead-cell {
+  background: #ffffff;
+  border: 1px solid #ccc;
+}
+
+.black-key .lead-cell {
+  background: #1a1a1a;
+  border: 1px solid #444;
+}
+
+.white-key .lead-cell:hover {
+  border-color: #999;
+}
+
+.black-key .lead-cell:hover {
+  border-color: #666;
+}
+
+.white-key .lead-cell.active,
+.white-key .lead-cell.active.beat-0,
+.white-key .lead-cell.active.beat-1,
+.white-key .lead-cell.active.beat-2,
+.white-key .lead-cell.active.beat-3 {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+
+.black-key .lead-cell.active,
+.black-key .lead-cell.active.beat-0,
+.black-key .lead-cell.active.beat-1,
+.black-key .lead-cell.active.beat-2,
+.black-key .lead-cell.active.beat-3 {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+
+.lead-cell.current {
+  border-color: #888;
+  border-width: 2px;
+}
+
+.lead-cell.active.current {
+  border-color: #ffb84d;
+  border-width: 2px;
+}
+
+/* Beat grouping for lead instrument - subtle visual separation every 4 beats */
+.white-key .lead-cell.beat-0,
+.white-key .lead-cell.beat-2 {
+  background: #ffffff;
+}
+
+.white-key .lead-cell.beat-1,
+.white-key .lead-cell.beat-3 {
+  background: #f5f5f5;
+}
+
+.black-key .lead-cell.beat-0,
+.black-key .lead-cell.beat-2 {
+  background: #1a1a1a;
+}
+
+.black-key .lead-cell.beat-1,
+.black-key .lead-cell.beat-3 {
+  background: #0f0f0f;
 }

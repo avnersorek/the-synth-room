@@ -34,7 +34,27 @@ export class Instrument {
   }
 
   setGrid(grid: boolean[][]) {
-    this.state.grid = grid;
+    // Validate grid dimensions match config
+    if (grid.length !== this.config.gridRows ||
+        (grid.length > 0 && grid[0].length !== this.config.gridCols)) {
+      console.warn(`Grid dimension mismatch for ${this.config.id}. Expected ${this.config.gridRows}x${this.config.gridCols}, got ${grid.length}x${grid[0]?.length || 0}. Recreating grid.`);
+
+      // Create a new grid with correct dimensions
+      const newGrid = Array(this.config.gridRows)
+        .fill(null)
+        .map(() => Array(this.config.gridCols).fill(false));
+
+      // Copy over valid data from old grid
+      for (let row = 0; row < Math.min(grid.length, this.config.gridRows); row++) {
+        for (let col = 0; col < Math.min(grid[row]?.length || 0, this.config.gridCols); col++) {
+          newGrid[row][col] = grid[row][col];
+        }
+      }
+
+      this.state.grid = newGrid;
+    } else {
+      this.state.grid = grid;
+    }
   }
 
   toggle(row: number, col: number): void {
@@ -70,8 +90,13 @@ export class Instrument {
   playStep(step: number, time?: number): void {
     for (let row = 0; row < this.config.gridRows; row++) {
       if (this.state.grid[row][step]) {
-        const sampleName = this.config.samples[row].name;
-        this.audio.play(sampleName, time);
+        if (this.config.type === 'drums') {
+          const sampleName = this.config.samples[row].name;
+          this.audio.play(sampleName, time);
+        } else if (this.config.type === 'lead') {
+          const noteName = this.config.samples[row].name;
+          this.audio.playNote(this.config.id, noteName, time);
+        }
       }
     }
   }
@@ -89,8 +114,9 @@ export class Instrument {
       );
       this.state.currentKit = kitName;
     } else if (this.config.type === 'lead') {
-      // For lead synth, we might load different samples or use synthesis
-      // For now, just a placeholder - we'll implement synthesis later
+      // For lead synth, create the synth
+      const synthType = (this.state.parameters as any).synthType || 'Synth';
+      this.audio.createSynth(this.config.id, synthType);
       console.log(`Lead instrument ${this.config.id} ready (synthesis mode)`);
     }
   }

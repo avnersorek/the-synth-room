@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 import PartyKitProvider from 'y-partykit/provider';
+import { INSTRUMENTS } from './types';
 
 export interface SyncConfig {
   roomId: string;
@@ -111,16 +112,21 @@ export class SyncManager {
     this.kit = this.ydoc.getMap('kit');
   }
 
-  // Get current grid state for an instrument (8x16 boolean array)
+  // Get current grid state for an instrument
   getGrid(instrumentId: string): boolean[][] {
+    // Get dimensions from instrument config
+    const config = INSTRUMENTS[instrumentId];
+    const defaultRows = config?.gridRows || 8;
+    const defaultCols = config?.gridCols || 16;
+
     const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
     if (!instrument) {
-      return Array(8).fill(null).map(() => Array(16).fill(false));
+      return Array(defaultRows).fill(null).map(() => Array(defaultCols).fill(false));
     }
 
     const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
     if (!grid) {
-      return Array(8).fill(null).map(() => Array(16).fill(false));
+      return Array(defaultRows).fill(null).map(() => Array(defaultCols).fill(false));
     }
 
     const result: boolean[][] = [];
