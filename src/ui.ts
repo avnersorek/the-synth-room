@@ -76,9 +76,9 @@ export class UI {
               </svg>
             </label>
           </div>
-          <div>
-            <input type="number" id="bpm" value="120" min="40" max="240" />
+          <div class="bpm-panel">
             <label for="bpm">BPM</label>
+            <input type="number" id="bpm" value="120" min="40" max="240" />
           </div>
         </div>
 

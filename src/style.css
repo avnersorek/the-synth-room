@@ -39,9 +39,7 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #444;
+  padding: 10px 40px 10px 40px;
 }
 
 .room-status-compact {
@@ -49,10 +47,13 @@ h3 {
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  background: #2a2a2a;
-  padding: 10px 15px;
-  border-radius: 6px;
-  border: 2px solid #444;
+}
+
+.bpm-panel {
+  display: flex;
+  justify-self: space-between;
+  align-items: center;
+  gap: 15px;
 }
 
 .room-url-section {
@@ -62,10 +63,7 @@ h3 {
 .panel {
   display: flex;
   background: #2a2a2a;
-  border: 2px solid #444;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 20px;
+  padding: 10px 40px 10px 40px;
 }
 
 .controls {
