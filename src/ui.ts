@@ -14,39 +14,42 @@ export class UI {
 
   render() {
     const sync = this.sequencer.getSync();
-    const roomId = sync ? sync.getRoomId() : '';
-    const roomUrl = roomId ? `${window.location.origin}${window.location.pathname}?room=${roomId}` : '';
-
+    
     this.container.innerHTML = `
-      <div class="drum-machine">
-        <h1>The Synth Room</h1>
-        ${sync ? `
-        <div class="room-info">
-          <div class="room-status">
+        <div class="header">
+          <h1>The Synth Room</h1>
+          ${sync ? `
+          <div class="room-status-compact">
             <span class="status-indicator" id="status-indicator">●</span>
             <span id="connection-status">Connecting...</span>
             <span id="users-count"></span>
-          </div>
-          <div class="room-share">
-            <span class="room-label">Room:</span>
-            <input type="text" id="room-url" value="${roomUrl}" readonly />
             <button id="copy-room" title="Copy room URL">📋</button>
           </div>
+          ` : ''}
         </div>
-        ` : ''}
-        <div class="controls">
-          <select id="kit">
-            ${KITS.map(kit => `<option value="${kit}">${kit}</option>`).join('')}
-          </select>
-          <input type="number" id="bpm" value="120" min="40" max="240" />
-          <label for="bpm">BPM</label>
-          <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7" />
-          <label for="volume">♩</label>
-          <button id="play">►</button>
-          <button id="stop">⏹</button>
+        <div class="panel">
+          <div class="controls">
+            <button id="play">►</button>
+            <button id="stop">⏹</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7" />
+            <label for="volume">Volume</label>
+          </div>
+          <div>
+            <input type="number" id="bpm" value="120" min="40" max="240" />
+            <label for="bpm">BPM</label>
+          </div>
         </div>
-        <div class="grid" id="grid"></div>
-      </div>
+
+        <div class="instrument-panel grid panel">
+          <div class="instrument-header">
+            <h3>Instrument</h3>
+            <select id="kit">
+              ${KITS.map(kit => `<option value="${kit}">${kit}</option>`).join('')}
+            </select>
+          </div>
+          <div class="grid" id="grid"></div>
+          </div>
+        </div>
     `;
 
     this.renderGrid();
@@ -134,9 +137,9 @@ export class UI {
     const copyButton = this.container.querySelector('#copy-room');
     if (copyButton) {
       copyButton.addEventListener('click', () => {
-        const roomUrlInput = this.container.querySelector('#room-url') as HTMLInputElement;
-        roomUrlInput.select();
-        navigator.clipboard.writeText(roomUrlInput.value);
+        const roomId = sync ? sync.getRoomId() : '';
+        const roomUrl = roomId ? `${window.location.origin}${window.location.pathname}?room=${roomId}` : '';
+        navigator.clipboard.writeText(roomUrl);
         copyButton.textContent = '✓';
         setTimeout(() => {
           copyButton.textContent = '📋';
