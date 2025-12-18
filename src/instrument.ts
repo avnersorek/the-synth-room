@@ -94,8 +94,25 @@ export class Instrument {
           const sampleName = this.config.samples[row].name;
           this.audio.play(sampleName, time);
         } else if (this.config.type === 'lead') {
-          const noteName = this.config.samples[row].name;
-          this.audio.playNote(this.config.id, noteName, time);
+          // For lead instruments, only trigger note at the START of a span
+          const isStartOfSpan = step === 0 || !this.state.grid[row][step - 1];
+
+          if (isStartOfSpan) {
+            // Calculate span duration by counting consecutive active beats
+            let spanLength = 1;
+            for (let i = step + 1; i < this.config.gridCols; i++) {
+              if (this.state.grid[row][i]) {
+                spanLength++;
+              } else {
+                break;
+              }
+            }
+
+            const duration = `0:0:${spanLength}`; //BARS:QUARTERS:SIXTEENTHS
+            const noteName = this.config.samples[row].name;
+            this.audio.playNote(this.config.id, noteName, time, duration);
+          }
+          // If not start of span, do nothing (note continues playing)
         }
       }
     }

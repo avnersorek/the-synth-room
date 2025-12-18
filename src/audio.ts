@@ -66,15 +66,15 @@ export class AudioEngine {
     }
   }
 
-  playNote(instrumentId: string, note: string, time?: number) {
+  playNote(instrumentId: string, note: string, time?: number, duration: string = '16n') {
     const synth = this.synths.get(instrumentId);
     if (!synth) return;
 
     // Play the note with the synth
     if (time !== undefined) {
-      synth.triggerAttackRelease(note, '16n', time);
+      synth.triggerAttackRelease(note, duration, time);
     } else {
-      synth.triggerAttackRelease(note, '16n');
+      synth.triggerAttackRelease(note, duration);
     }
   }
 
