@@ -7,7 +7,8 @@
     "dev:server": "partykit dev --live --verbose -p 1999",
     "build": "tsc && vite build",
     "type-check": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy-party": "partykit deploy --var PARTYKIT_HOST=http://the-synth-room.avnersorek.partykit.dev --var CORS_ORIGIN=https://the-synth-room.avner-sorek.workers.dev"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
