@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "partykit dev --live --verbose -p 1999",
     "build": "tsc && vite build",
     "type-check": "tsc --noEmit",
     "preview": "vite preview"

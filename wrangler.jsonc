@@ -1,4 +1,5 @@
 {
+    // Wrangler is the CLI that uploads our dist to CloudFlair for distribution
     "name": "the-synth-room",
     "compatibility_date": "2025-12-15",
     "assets": {

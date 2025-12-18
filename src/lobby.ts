@@ -72,8 +72,7 @@ export class Lobby {
       const roomsList = this.container.querySelector('#rooms-list');
       if (roomsList) {
         roomsList.innerHTML = `
-          <p class="error">Failed to load rooms. Make sure PartyKit server is running.</p>
-          <p class="error-detail">Try running: <code>npx partykit dev</code></p>
+          <p class="error">Failed to load rooms. Make sure PartyKit server is running. <br/> Try running: <br/> <code>npx partykit dev</code></p>
         `;
       }
     }
