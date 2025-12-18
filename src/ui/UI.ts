@@ -157,14 +157,10 @@ export class UI {
     this.syncUIManager.setupGridChangeListener((instrumentId, row, col, value) => {
       // Only update if this is an always-visible instrument (drums, lead1) or the currently displayed instrument
       if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== this.currentInstrumentId) return;
-
-      console.log(`UI: Grid change received [${instrumentId}, ${row}, ${col}] = ${value}`);
-
       const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`);
       if (instrumentCard) {
         const cell = instrumentCard.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
         if (cell) {
-          console.log(`UI: Updating cell visual`);
           cell.classList.toggle('active', value);
         } else {
           console.warn(`UI: Cell not found for [${row}, ${col}]`);

@@ -566,3 +566,9 @@ button {
 .black-key .lead-cell.beat-3 {
   background: #0f0f0f;
 }
+
+.lead-cell.active + .lead-cell.active {
+  margin-left: -10px;
+  width: 42px;
+}
+
