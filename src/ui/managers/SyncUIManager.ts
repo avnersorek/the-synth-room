@@ -18,6 +18,7 @@ export class SyncUIManager {
    */
   setupSyncUI(onGridUpdate: () => void): void {
     this.setupCopyRoomButton();
+    this.setupGotoLobbyButton();
     this.setupConnectionStatusUpdates(onGridUpdate);
     this.startPeriodicUpdates();
     this.updateConnectionStatus();
@@ -37,6 +38,18 @@ export class SyncUIManager {
         setTimeout(() => {
           copyButton.textContent = '📋';
         }, 2000);
+      });
+    }
+  }
+
+  /**
+   * Handle goto lobby button
+   */
+  private setupGotoLobbyButton(): void {
+    const gotoLobbyButton = this.container.querySelector('#goto-lobby');
+    if (gotoLobbyButton) {
+      gotoLobbyButton.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
       });
     }
   }

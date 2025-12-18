@@ -73,6 +73,7 @@ export class UI {
             <span id="connection-status">Connecting...</span>
             <span id="users-count"></span>
             <button id="copy-room" title="Copy room URL">📋</button>
+            <button id="goto-lobby" title="Go to Lobby">🏠</button>
           </div>
           ` : ''}
         </div>
