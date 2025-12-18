@@ -1,8 +1,8 @@
 export interface Room {
-  id: string;
-  connectedUsers: number;
-  lastActivity: number;
-  metadata?: any;
+  roomId: string;
+  connectionCount: number;
+  // lastActivity: number;
+  // metadata?: any;
 }
 
 export class Lobby {
@@ -33,9 +33,9 @@ export class Lobby {
     await this.loadRooms();
 
     // Auto-refresh every 5 seconds
-    this.refreshInterval = window.setInterval(() => {
-      this.loadRooms();
-    }, 5000);
+    // this.refreshInterval = window.setInterval(() => {
+    //   this.loadRooms();
+    // }, 5000);
   }
 
   private attachEvents() {
@@ -65,8 +65,8 @@ export class Lobby {
         throw new Error(`Failed to fetch rooms: ${response.statusText}`);
       }
 
-      const rooms: Room[] = await response.json();
-      this.renderRoomsList(rooms);
+      const rooms = await response.json();
+      this.renderRoomsList(rooms.roomsList);
     } catch (error) {
       console.error('Error loading rooms:', error);
       const roomsList = this.container.querySelector('#rooms-list');
@@ -95,14 +95,13 @@ export class Lobby {
     const roomsHtml = rooms
       .map(
         (room) => `
-        <div class="room-card" data-room-id="${room.id}">
+        <div class="room-card" data-room-id="${room.roomId}">
           <div class="room-header">
-            <h3 class="room-id">Room: ${room.id}</h3>
-            <span class="user-count">${room.connectedUsers} ${room.connectedUsers === 1 ? 'user' : 'users'}</span>
+            <h3 class="room-id">Room: ${room.roomId}</h3>
+            <span class="user-count">${room.connectionCount} ${room.connectionCount === 1 ? 'user' : 'users'}</span>
           </div>
           <div class="room-footer">
-            <span class="last-activity">Active ${this.formatRelativeTime(room.lastActivity)}</span>
-            <button class="join-button" data-room-id="${room.id}">Join Room</button>
+            <button class="join-button" data-room-id="${room.roomId}">Join Room</button>
           </div>
         </div>
       `
@@ -122,20 +121,20 @@ export class Lobby {
     });
   }
 
-  private formatRelativeTime(timestamp: number): string {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+  // private formatRelativeTime(timestamp: number): string {
+  //   const now = Date.now();
+  //   const diff = now - timestamp;
+  //   const seconds = Math.floor(diff / 1000);
+  //   const minutes = Math.floor(seconds / 60);
+  //   const hours = Math.floor(minutes / 60);
+  //   const days = Math.floor(hours / 24);
 
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    if (seconds > 0) return `${seconds}s ago`;
-    return 'just now';
-  }
+  //   if (days > 0) return `${days}d ago`;
+  //   if (hours > 0) return `${hours}h ago`;
+  //   if (minutes > 0) return `${minutes}m ago`;
+  //   if (seconds > 0) return `${seconds}s ago`;
+  //   return 'just now';
+  // }
 
   destroy() {
     if (this.refreshInterval) {
