@@ -24,6 +24,7 @@ export class DrumInstrument extends AbstractGridInstrument {
           <select id="kit">
             ${KITS.map(kit => `<option value="${kit}">${kit}</option>`).join('')}
           </select>
+          ${this.renderVolumeControl()}
         </div>
         <div class="grid" id="drum-grid">
           ${this.renderGrid()}

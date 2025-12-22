@@ -117,4 +117,11 @@ export class SyncUIManager {
   setupBpmChangeListener(callback: (bpm: number) => void): void {
     this.sync.onBpmChange(callback);
   }
+
+  /**
+   * Set up volume change listener
+   */
+  setupVolumeChangeListener(callback: (instrumentId: string, value: number) => void): void {
+    this.sync.onInstrumentVolumeChange(callback);
+  }
 }

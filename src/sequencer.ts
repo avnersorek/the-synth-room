@@ -48,6 +48,12 @@ export class Sequencer {
     // Create bass instrument
     const bassInstrument = new Instrument(INSTRUMENTS.bass, this.audio);
     this.instruments.set('bass', bassInstrument);
+
+    // Initialize instrument volumes in audio engine
+    this.instruments.forEach((instrument, id) => {
+      const volume = instrument.getParameters().volume ?? 0.5;
+      this.audio.setInstrumentVolume(id, volume);
+    });
   }
 
   private initializeFromSync() {
@@ -69,6 +75,13 @@ export class Sequencer {
         if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
         if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
         if (bassInstrument) bassInstrument.setGrid(bassGrid);
+
+        // Load volumes from sync
+        this.instruments.forEach((instrument, id) => {
+          const volume = this.sync!.getInstrumentVolume(id);
+          instrument.setParameter('volume', volume);
+          this.audio.setInstrumentVolume(id, volume);
+        });
       }
     });
 
@@ -85,6 +98,13 @@ export class Sequencer {
     if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
     if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
     if (bassInstrument) bassInstrument.setGrid(bassGrid);
+
+    // Load volumes from sync
+    this.instruments.forEach((instrument, id) => {
+      const volume = this.sync!.getInstrumentVolume(id);
+      instrument.setParameter('volume', volume);
+      this.audio.setInstrumentVolume(id, volume);
+    });
 
     // Listen to remote grid changes
     this.sync.onGridChange((instrumentId, row, col, value) => {
@@ -103,6 +123,15 @@ export class Sequencer {
       if (this.isPlaying()) {
         this.stop();
         this.play();
+      }
+    });
+
+    // Listen to remote volume changes
+    this.sync.onInstrumentVolumeChange((instrumentId, value) => {
+      const instrument = this.instruments.get(instrumentId);
+      if (instrument) {
+        instrument.setParameter('volume', value);
+        this.audio.setInstrumentVolume(instrumentId, value);
       }
     });
   }
@@ -144,6 +173,30 @@ export class Sequencer {
 
   setVolume(value: number) {
     this.audio.setVolume(value);
+  }
+
+  setInstrumentVolume(instrumentId: string, value: number) {
+    const instrument = this.instruments.get(instrumentId);
+    if (!instrument) return;
+
+    // Update the instrument's volume parameter
+    instrument.setParameter('volume', value);
+
+    // Update the audio engine
+    this.audio.setInstrumentVolume(instrumentId, value);
+
+    // Sync to other users if collaborative mode is enabled
+    if (this.sync) {
+      this.sync.setInstrumentVolume(instrumentId, value);
+    }
+  }
+
+  getInstrumentVolume(instrumentId: string): number {
+    const instrument = this.instruments.get(instrumentId);
+    if (!instrument) return 0.5; // Default volume
+
+    const params = instrument.getParameters();
+    return params.volume ?? 0.5;
   }
 
   play() {

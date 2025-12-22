@@ -126,7 +126,7 @@ export class Instrument {
       await Promise.all(
         samples.map(async (sample) => {
           const path = `/sounds/${kitName}/${sample.name}.wav`;
-          await this.audio.loadSample(sample.name, path);
+          await this.audio.loadSample(sample.name, path, this.config.id);
         })
       );
       this.state.currentKit = kitName;

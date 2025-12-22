@@ -24,6 +24,7 @@ export class BassInstrument extends AbstractGridInstrument {
           <select id="bass-oscillator-type">
             ${BASS_OSCILLATOR_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
           </select>
+          ${this.renderVolumeControl()}
         </div>
         <div class="grid" id="bass-grid">
           ${this.renderGrid()}

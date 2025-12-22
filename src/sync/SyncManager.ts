@@ -11,6 +11,7 @@ import { GridSyncManager } from './managers/GridSyncManager';
 import { BpmSyncManager } from './managers/BpmSyncManager';
 import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
+import { VolumeSyncManager } from './managers/VolumeSyncManager';
 import { GridMigration } from './utils/GridMigration';
 
 export class SyncManager {
@@ -25,6 +26,7 @@ export class SyncManager {
   private bpmManager!: BpmSyncManager;
   private kitManager!: KitSyncManager;
   private synthTypeManager!: SynthTypeSyncManager;
+  private volumeManager!: VolumeSyncManager;
 
   constructor(config: SyncConfig) {
     // Initialize Yjs document
@@ -88,6 +90,10 @@ export class SyncManager {
         }
         instrumentMap.set('grid', gridArray);
 
+        // Initialize volume from config
+        const defaultVolume = config.parameters.volume ?? 0.5;
+        instrumentMap.set('volume', defaultVolume);
+
         this.instruments.set(instrumentId, instrumentMap);
       }
     });
@@ -117,6 +123,7 @@ export class SyncManager {
     this.bpmManager = new BpmSyncManager(this.ydoc, this.ydoc.getMap('bpm'));
     this.kitManager = new KitSyncManager(this.ydoc, this.ydoc.getMap('kit'));
     this.synthTypeManager = new SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('synthType'));
+    this.volumeManager = new VolumeSyncManager(this.ydoc, this.instruments);
   }
 
   private refreshReferences() {
@@ -181,6 +188,19 @@ export class SyncManager {
 
   onSynthTypeChange(callback: (type: string) => void) {
     this.synthTypeManager.onSynthTypeChange(callback, (cb) => this.onConnectionChange(cb));
+  }
+
+  // Volume operations - delegate to VolumeSyncManager
+  getInstrumentVolume(instrumentId: string): number {
+    return this.volumeManager.getVolume(instrumentId);
+  }
+
+  setInstrumentVolume(instrumentId: string, value: number) {
+    this.volumeManager.setVolume(instrumentId, value);
+  }
+
+  onInstrumentVolumeChange(callback: (instrumentId: string, value: number) => void) {
+    this.volumeManager.onVolumeChange(callback, (cb) => this.onConnectionChange(cb));
   }
 
   // Connection status

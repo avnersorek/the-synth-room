@@ -42,6 +42,15 @@ export abstract class AbstractGridInstrument {
       }
     });
 
+    // Volume control handler
+    const volumeSlider = container.querySelector(`#${this.instrumentId}-volume`) as HTMLInputElement;
+    if (volumeSlider) {
+      volumeSlider.addEventListener('input', (e) => {
+        const value = parseFloat((e.target as HTMLInputElement).value);
+        this.sequencer.setInstrumentVolume(this.instrumentId, value);
+      });
+    }
+
     // Let subclasses attach additional events
     this.attachAdditionalEvents(container);
   }
@@ -94,6 +103,31 @@ export abstract class AbstractGridInstrument {
     const selector = container.querySelector(`#${selectorId}`) as HTMLSelectElement;
     if (selector) {
       selector.value = value;
+    }
+  }
+
+  /**
+   * Render volume control slider
+   * Reusable component for all instruments
+   */
+  protected renderVolumeControl(): string {
+    const volume = this.sequencer.getInstrumentVolume(this.instrumentId);
+    return `
+      <div class="control-group">
+        <label for="${this.instrumentId}-volume">Volume:</label>
+        <input type="range" id="${this.instrumentId}-volume" min="0" max="1" step="0.01" value="${volume}" class="small-range-input" />
+      </div>
+    `;
+  }
+
+  /**
+   * Update volume slider to reflect current value
+   */
+  updateVolumeDisplay(container: HTMLElement): void {
+    const volumeSlider = container.querySelector(`#${this.instrumentId}-volume`) as HTMLInputElement;
+    if (volumeSlider) {
+      const currentVolume = this.sequencer.getInstrumentVolume(this.instrumentId);
+      volumeSlider.value = currentVolume.toString();
     }
   }
 }

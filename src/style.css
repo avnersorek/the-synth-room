@@ -688,3 +688,13 @@ button {
   width: 42px;
 }
 
+input[type=range] {
+  cursor: pointer;
+  accent-color: darkslateblue;
+  /* outline: none; */
+}
+
+.small-range-input {
+  width: 50px;
+}
+

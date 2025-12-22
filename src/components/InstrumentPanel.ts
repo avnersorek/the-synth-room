@@ -67,8 +67,12 @@ export class InstrumentPanel {
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
 
-      // Don't change instrument if clicking on a cell (note)
-      if (target.classList.contains('cell')) {
+      // Don't change instrument if clicking on interactive elements (cells, selects, inputs, buttons)
+      if (target.classList.contains('cell') ||
+          target.tagName === 'SELECT' ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'BUTTON' ||
+          target.closest('select, input, button')) {
         return;
       }
 

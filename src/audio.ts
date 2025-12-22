@@ -6,16 +6,28 @@ export class AudioEngine {
   private synths: Map<string, Tone.PolySynth>;
   private monoSynths: Map<string, Tone.MonoSynth>;
   private volume: Tone.Volume;
+  private instrumentVolumes: Map<string, Tone.Volume>;
 
   constructor() {
     this.samplers = new Map();
     this.synths = new Map();
     this.monoSynths = new Map();
     this.volume = new Tone.Volume(0).toDestination();
+    this.instrumentVolumes = new Map();
   }
 
-  async loadSample(name: string, url: string) {
+  private getOrCreateInstrumentVolume(instrumentId: string): Tone.Volume {
+    let vol = this.instrumentVolumes.get(instrumentId);
+    if (!vol) {
+      vol = new Tone.Volume(0).connect(this.volume);
+      this.instrumentVolumes.set(instrumentId, vol);
+    }
+    return vol;
+  }
+
+  async loadSample(name: string, url: string, instrumentId: string = 'drums') {
     // Create a sampler for this specific sample
+    const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
     const sampler = new Tone.Sampler({
       urls: {
         'C3': url.replace('/sounds/', './sounds/'),
@@ -23,7 +35,7 @@ export class AudioEngine {
       onload: () => {
         console.log(`Sample ${name} loaded`);
       },
-    }).connect(this.volume);
+    }).connect(instrumentVolume);
 
     this.samplers.set(name, sampler);
   }
@@ -35,24 +47,26 @@ export class AudioEngine {
       existingSynth.dispose();
     }
 
+    const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
+
     // Create the appropriate synth type
     let synth: Tone.PolySynth;
     switch (synthType) {
       case 'FMSynth':
-        synth = new Tone.PolySynth(Tone.FMSynth).connect(this.volume);
+        synth = new Tone.PolySynth(Tone.FMSynth).connect(instrumentVolume);
         break;
       case 'AMSynth':
-        synth = new Tone.PolySynth(Tone.AMSynth).connect(this.volume);
+        synth = new Tone.PolySynth(Tone.AMSynth).connect(instrumentVolume);
         break;
       case 'Synth':
-        synth = new Tone.PolySynth(Tone.Synth).connect(this.volume);
+        synth = new Tone.PolySynth(Tone.Synth).connect(instrumentVolume);
         // Set oscillator type if specified (only works with basic Synth)
         if (oscillatorType) {
           synth.set({ oscillator: { type: oscillatorType as any } });
         }
         break;
       default:
-        synth = new Tone.PolySynth(Tone.FMSynth).connect(this.volume);
+        synth = new Tone.PolySynth(Tone.FMSynth).connect(instrumentVolume);
     }
 
     this.synths.set(instrumentId, synth);
@@ -66,6 +80,8 @@ export class AudioEngine {
       existingMonoSynth.dispose();
     }
 
+    const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
+
     // Create MonoSynth with specified oscillator type
     const monoSynth = new Tone.MonoSynth({
       oscillator: {
@@ -74,7 +90,7 @@ export class AudioEngine {
       envelope: {
         attack: 0
       }
-    }).connect(this.volume);
+    }).connect(instrumentVolume);
 
     this.monoSynths.set(instrumentId, monoSynth);
     console.log(`Created MonoSynth for ${instrumentId} with ${oscillatorType} oscillator`);
@@ -128,6 +144,24 @@ export class AudioEngine {
     }
   }
 
+  setInstrumentVolume(instrumentId: string, value: number) {
+    const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
+    // Convert 0-1 range to decibels
+    if (value === 0) {
+      instrumentVolume.volume.value = -Infinity;
+    } else {
+      instrumentVolume.volume.value = Tone.gainToDb(value);
+    }
+  }
+
+  getInstrumentVolume(instrumentId: string): number {
+    const instrumentVolume = this.instrumentVolumes.get(instrumentId);
+    if (!instrumentVolume) return 0.5; // Default volume
+    const dbValue = instrumentVolume.volume.value;
+    if (dbValue === -Infinity) return 0;
+    return Tone.dbToGain(dbValue);
+  }
+
   clear() {
     this.samplers.forEach(sampler => sampler.dispose());
     this.samplers.clear();
@@ -135,6 +169,8 @@ export class AudioEngine {
     this.synths.clear();
     this.monoSynths.forEach(monoSynth => monoSynth.dispose());
     this.monoSynths.clear();
+    this.instrumentVolumes.forEach(vol => vol.dispose());
+    this.instrumentVolumes.clear();
   }
 
   async start() {

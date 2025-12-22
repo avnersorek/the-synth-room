@@ -24,6 +24,7 @@ export class LeadInstrument extends AbstractGridInstrument {
           <select id="synth-type">
             ${SYNTH_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
           </select>
+          ${this.renderVolumeControl()}
         </div>
         <div class="grid" id="lead-grid">
           ${this.renderGrid()}
