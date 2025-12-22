@@ -66,6 +66,12 @@ export class InstrumentPanel {
     // Setup click handlers for instrument cards
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
+
+      // Don't change instrument if clicking on a cell (note)
+      if (target.classList.contains('cell')) {
+        return;
+      }
+
       const wrapper = target.closest('.instrument-card-wrapper') as HTMLElement;
 
       if (wrapper) {
