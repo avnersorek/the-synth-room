@@ -25,6 +25,7 @@ export interface DrumParameters extends InstrumentParameters {
 }
 
 export type SynthType = 'FMSynth' | 'AMSynth' | 'Synth';
+export type BassOscillatorType = 'square' | 'square8' | 'sine';
 
 export interface LeadParameters extends InstrumentParameters {
   volume: number;
@@ -35,6 +36,15 @@ export interface LeadParameters extends InstrumentParameters {
   release?: number;
   cutoff?: number;
   resonance?: number;
+}
+
+export interface BassParameters extends InstrumentParameters {
+  volume: number;
+  oscillatorType?: BassOscillatorType;
+  attack?: number;
+  decay?: number;
+  sustain?: number;
+  release?: number;
 }
 
 export interface InstrumentState {
@@ -53,9 +63,16 @@ export const LEAD_NOTES = [
   'C4'
 ];
 
+export const BASS_NOTES = [
+  'C0', 'C#0', 'D0', 'D#0', 'E0', 'F0', 'F#0', 'G0', 'G#0', 'A0', 'A#0', 'B0',
+  'C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1', 'A1', 'A#1', 'B1',
+  'C2'
+];
+
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
 export const SYNTH_TYPES: SynthType[] = ['FMSynth', 'AMSynth', 'Synth'];
+export const BASS_OSCILLATOR_TYPES: BassOscillatorType[] = ['square', 'square8', 'sine'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
   drums: {
@@ -85,6 +102,22 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
       release: 0.3,
       cutoff: 2000,
       resonance: 1,
+    }
+  },
+  bass: {
+    id: 'bass',
+    type: 'lead',
+    name: 'Bass',
+    samples: BASS_NOTES.map(note => ({ name: note, path: '' })),
+    gridRows: 25,
+    gridCols: 16,
+    parameters: {
+      volume: 0.5,
+      oscillatorType: 'square',
+      attack: 0,
+      decay: 0.1,
+      sustain: 0.7,
+      release: 0.3,
     }
   }
 };

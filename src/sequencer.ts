@@ -44,6 +44,10 @@ export class Sequencer {
     // Create lead1 instrument
     const lead1Instrument = new Instrument(INSTRUMENTS.lead1, this.audio);
     this.instruments.set('lead1', lead1Instrument);
+
+    // Create bass instrument
+    const bassInstrument = new Instrument(INSTRUMENTS.bass, this.audio);
+    this.instruments.set('bass', bassInstrument);
   }
 
   private initializeFromSync() {
@@ -55,26 +59,32 @@ export class Sequencer {
         // Reload state after sync completes
         const drumsGrid = this.sync!.getGrid('drums');
         const lead1Grid = this.sync!.getGrid('lead1');
+        const bassGrid = this.sync!.getGrid('bass');
         this.bpm = this.sync!.getBpm();
 
         const drumsInstrument = this.instruments.get('drums');
         const lead1Instrument = this.instruments.get('lead1');
+        const bassInstrument = this.instruments.get('bass');
 
         if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
         if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
+        if (bassInstrument) bassInstrument.setGrid(bassGrid);
       }
     });
 
     // Load initial state from Yjs
     const drumsGrid = this.sync.getGrid('drums');
     const lead1Grid = this.sync.getGrid('lead1');
+    const bassGrid = this.sync.getGrid('bass');
     this.bpm = this.sync.getBpm();
 
     const drumsInstrument = this.instruments.get('drums');
     const lead1Instrument = this.instruments.get('lead1');
+    const bassInstrument = this.instruments.get('bass');
 
     if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
     if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
+    if (bassInstrument) bassInstrument.setGrid(bassGrid);
 
     // Listen to remote grid changes
     this.sync.onGridChange((instrumentId, row, col, value) => {

@@ -424,19 +424,19 @@ button {
 }
 
 /* Instrument Controls */
-.drum-controls, .lead-controls {
+.drum-controls, .lead-controls, .bass-controls {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
 }
 
-.drum-controls label, .lead-controls label {
+.drum-controls label, .lead-controls label, .bass-controls label {
   font-weight: bold;
   font-size: 14px;
 }
 
-.drum-controls select, .lead-controls select {
+.drum-controls select, .lead-controls select, .bass-controls select {
   padding: 6px 12px;
   font-size: 14px;
   background: #2a2a2a;
@@ -447,11 +447,11 @@ button {
   transition: all 0.2s;
 }
 
-.drum-controls select:hover, .lead-controls select:hover {
+.drum-controls select:hover, .lead-controls select:hover, .bass-controls select:hover {
   border-color: #666;
 }
 
-.drum-controls select:focus, .lead-controls select:focus {
+.drum-controls select:focus, .lead-controls select:focus, .bass-controls select:focus {
   outline: none;
   border-color: #ff9800;
 }
@@ -568,6 +568,122 @@ button {
 }
 
 .lead-cell.active + .lead-cell.active {
+  margin-left: -10px;
+  width: 42px;
+}
+
+/* Bass Instrument Specific - Same styling as lead */
+.bass-instrument .grid {
+  max-height: 600px;
+  overflow-y: auto;
+  gap: 0;
+}
+
+.bass-row {
+  gap: 2px;
+  height: 24px;
+  margin: 0;
+}
+
+.bass-row.white-key {
+  background: #f5f5f5;
+}
+
+.bass-row.black-key {
+  background: #2a2a2a;
+}
+
+.bass-label {
+  width: 50px;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+
+.white-key .bass-label {
+  color: #333;
+}
+
+.black-key .bass-label {
+  color: #999;
+}
+
+.bass-cell {
+  width: 32px;
+  height: 20px;
+  border-radius: 2px;
+}
+
+.white-key .bass-cell {
+  background: #ffffff;
+  border: 1px solid #ccc;
+}
+
+.black-key .bass-cell {
+  background: #1a1a1a;
+  border: 1px solid #444;
+}
+
+.white-key .bass-cell:hover {
+  border-color: #999;
+}
+
+.black-key .bass-cell:hover {
+  border-color: #666;
+}
+
+.white-key .bass-cell.active,
+.white-key .bass-cell.active.beat-0,
+.white-key .bass-cell.active.beat-1,
+.white-key .bass-cell.active.beat-2,
+.white-key .bass-cell.active.beat-3 {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+
+.black-key .bass-cell.active,
+.black-key .bass-cell.active.beat-0,
+.black-key .bass-cell.active.beat-1,
+.black-key .bass-cell.active.beat-2,
+.black-key .bass-cell.active.beat-3 {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+
+.bass-cell.current {
+  border-color: #888;
+  border-width: 2px;
+}
+
+.bass-cell.active.current {
+  border-color: #ffb84d;
+  border-width: 2px;
+}
+
+/* Beat grouping for bass instrument - subtle visual separation every 4 beats */
+.white-key .bass-cell.beat-0,
+.white-key .bass-cell.beat-2 {
+  background: #ffffff;
+}
+
+.white-key .bass-cell.beat-1,
+.white-key .bass-cell.beat-3 {
+  background: #f5f5f5;
+}
+
+.black-key .bass-cell.beat-0,
+.black-key .bass-cell.beat-2 {
+  background: #1a1a1a;
+}
+
+.black-key .bass-cell.beat-1,
+.black-key .bass-cell.beat-3 {
+  background: #0f0f0f;
+}
+
+.bass-cell.active + .bass-cell.active {
   margin-left: -10px;
   width: 42px;
 }

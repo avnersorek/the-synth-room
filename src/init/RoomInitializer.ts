@@ -44,6 +44,14 @@ export class RoomInitializer {
       await lead1Instrument.loadSamples();
     }
 
+    // Initialize bass synth with MonoSynth and square oscillator
+    const bassInstrument = sequencer.getInstrument('bass');
+    if (bassInstrument) {
+      bassInstrument.setParameter('oscillatorType', 'square');
+      audio.createBassMonoSynth('bass', 'square');
+      await bassInstrument.loadSamples();
+    }
+
     const app = document.querySelector<HTMLDivElement>('#app')!;
 
     // Handle kit changes
@@ -64,7 +72,16 @@ export class RoomInitializer {
       this.resourceLoader.loadSynthType(sequencer, audio, synthType);
     };
 
-    const ui = new UI(sequencer, app, onKitChange, onSynthChange);
+    // Handle bass oscillator type changes
+    const onBassOscillatorChange = (oscillatorType: string) => {
+      const bassInstrument = sequencer.getInstrument('bass');
+      if (bassInstrument) {
+        bassInstrument.setParameter('oscillatorType', oscillatorType);
+        audio.createBassMonoSynth('bass', oscillatorType as any);
+      }
+    };
+
+    const ui = new UI(sequencer, app, onKitChange, onSynthChange, onBassOscillatorChange);
 
     // Listen to remote kit changes
     sync.onKitChange(async (kitName) => {
