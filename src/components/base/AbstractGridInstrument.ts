@@ -51,6 +51,15 @@ export abstract class AbstractGridInstrument {
       });
     }
 
+    // Effect send control handler
+    const effectSendSlider = container.querySelector(`#${this.instrumentId}-effect-send`) as HTMLInputElement;
+    if (effectSendSlider) {
+      effectSendSlider.addEventListener('input', (e) => {
+        const value = parseFloat((e.target as HTMLInputElement).value);
+        this.sequencer.setEffectSend(this.instrumentId, value);
+      });
+    }
+
     // Let subclasses attach additional events
     this.attachAdditionalEvents(container);
   }
@@ -121,6 +130,20 @@ export abstract class AbstractGridInstrument {
   }
 
   /**
+   * Render effect send control slider
+   * Reusable component for all instruments
+   */
+  protected renderEffectSendControl(): string {
+    const effectSend = this.sequencer.getEffectSend(this.instrumentId);
+    return `
+      <div class="control-group">
+        <label for="${this.instrumentId}-effect-send">Delay:</label>
+        <input type="range" id="${this.instrumentId}-effect-send" min="0" max="1" step="0.01" value="${effectSend}" class="small-range-input" />
+      </div>
+    `;
+  }
+
+  /**
    * Update volume slider to reflect current value
    */
   updateVolumeDisplay(container: HTMLElement): void {
@@ -128,6 +151,17 @@ export abstract class AbstractGridInstrument {
     if (volumeSlider) {
       const currentVolume = this.sequencer.getInstrumentVolume(this.instrumentId);
       volumeSlider.value = currentVolume.toString();
+    }
+  }
+
+  /**
+   * Update effect send slider to reflect current value
+   */
+  updateEffectSendDisplay(container: HTMLElement): void {
+    const effectSendSlider = container.querySelector(`#${this.instrumentId}-effect-send`) as HTMLInputElement;
+    if (effectSendSlider) {
+      const currentEffectSend = this.sequencer.getEffectSend(this.instrumentId);
+      effectSendSlider.value = currentEffectSend.toString();
     }
   }
 }

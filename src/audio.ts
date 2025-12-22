@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import type { SynthType, BassOscillatorType } from './types';
+import { EffectsController } from './effects/EffectsController';
 
 export class AudioEngine {
   private samplers: Map<string, Tone.Sampler>;
@@ -7,6 +8,7 @@ export class AudioEngine {
   private monoSynths: Map<string, Tone.MonoSynth>;
   private volume: Tone.Volume;
   private instrumentVolumes: Map<string, Tone.Volume>;
+  private effects: EffectsController;
 
   constructor() {
     this.samplers = new Map();
@@ -14,12 +16,16 @@ export class AudioEngine {
     this.monoSynths = new Map();
     this.volume = new Tone.Volume(0).toDestination();
     this.instrumentVolumes = new Map();
+    this.effects = new EffectsController(this.volume);
   }
 
   private getOrCreateInstrumentVolume(instrumentId: string): Tone.Volume {
     let vol = this.instrumentVolumes.get(instrumentId);
     if (!vol) {
-      vol = new Tone.Volume(0).connect(this.volume);
+      // Create volume node that connects to BOTH main output and effect send
+      vol = new Tone.Volume(0);
+      vol.connect(this.volume); // Main output
+      vol.connect(this.effects.getEffectSendNode(instrumentId)); // Effect send
       this.instrumentVolumes.set(instrumentId, vol);
     }
     return vol;
@@ -162,6 +168,14 @@ export class AudioEngine {
     return Tone.dbToGain(dbValue);
   }
 
+  setEffectSend(instrumentId: string, value: number) {
+    this.effects.setEffectSend(instrumentId, value);
+  }
+
+  getEffectSend(instrumentId: string): number {
+    return this.effects.getEffectSend(instrumentId);
+  }
+
   clear() {
     this.samplers.forEach(sampler => sampler.dispose());
     this.samplers.clear();
@@ -171,6 +185,7 @@ export class AudioEngine {
     this.monoSynths.clear();
     this.instrumentVolumes.forEach(vol => vol.dispose());
     this.instrumentVolumes.clear();
+    this.effects.dispose();
   }
 
   async start() {

@@ -12,6 +12,7 @@ import { BpmSyncManager } from './managers/BpmSyncManager';
 import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
 import { VolumeSyncManager } from './managers/VolumeSyncManager';
+import { EffectsSyncManager } from './managers/EffectsSyncManager';
 import { GridMigration } from './utils/GridMigration';
 
 export class SyncManager {
@@ -27,6 +28,7 @@ export class SyncManager {
   private kitManager!: KitSyncManager;
   private synthTypeManager!: SynthTypeSyncManager;
   private volumeManager!: VolumeSyncManager;
+  private effectsManager!: EffectsSyncManager;
 
   constructor(config: SyncConfig) {
     // Initialize Yjs document
@@ -124,6 +126,7 @@ export class SyncManager {
     this.kitManager = new KitSyncManager(this.ydoc, this.ydoc.getMap('kit'));
     this.synthTypeManager = new SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('synthType'));
     this.volumeManager = new VolumeSyncManager(this.ydoc, this.instruments);
+    this.effectsManager = new EffectsSyncManager(this.ydoc, this.instruments);
   }
 
   private refreshReferences() {
@@ -201,6 +204,19 @@ export class SyncManager {
 
   onInstrumentVolumeChange(callback: (instrumentId: string, value: number) => void) {
     this.volumeManager.onVolumeChange(callback, (cb) => this.onConnectionChange(cb));
+  }
+
+  // Effect send operations - delegate to EffectsSyncManager
+  getEffectSend(instrumentId: string): number {
+    return this.effectsManager.getEffectSend(instrumentId);
+  }
+
+  setEffectSend(instrumentId: string, value: number) {
+    this.effectsManager.setEffectSend(instrumentId, value);
+  }
+
+  onEffectSendChange(callback: (instrumentId: string, value: number) => void) {
+    this.effectsManager.onEffectSendChange(callback, (cb) => this.onConnectionChange(cb));
   }
 
   // Connection status

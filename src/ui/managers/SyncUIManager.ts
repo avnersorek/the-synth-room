@@ -124,4 +124,11 @@ export class SyncUIManager {
   setupVolumeChangeListener(callback: (instrumentId: string, value: number) => void): void {
     this.sync.onInstrumentVolumeChange(callback);
   }
+
+  /**
+   * Set up effect send change listener
+   */
+  setupEffectSendChangeListener(callback: (instrumentId: string, value: number) => void): void {
+    this.sync.onEffectSendChange(callback);
+  }
 }

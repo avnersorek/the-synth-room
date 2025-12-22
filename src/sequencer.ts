@@ -49,10 +49,12 @@ export class Sequencer {
     const bassInstrument = new Instrument(INSTRUMENTS.bass, this.audio);
     this.instruments.set('bass', bassInstrument);
 
-    // Initialize instrument volumes in audio engine
+    // Initialize instrument volumes and effect sends in audio engine
     this.instruments.forEach((instrument, id) => {
       const volume = instrument.getParameters().volume ?? 0.5;
       this.audio.setInstrumentVolume(id, volume);
+      // Initialize effect send to 0 (disabled by default)
+      this.audio.setEffectSend(id, 0);
     });
   }
 
@@ -76,11 +78,14 @@ export class Sequencer {
         if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
         if (bassInstrument) bassInstrument.setGrid(bassGrid);
 
-        // Load volumes from sync
+        // Load volumes and effect sends from sync
         this.instruments.forEach((instrument, id) => {
           const volume = this.sync!.getInstrumentVolume(id);
           instrument.setParameter('volume', volume);
           this.audio.setInstrumentVolume(id, volume);
+
+          const effectSend = this.sync!.getEffectSend(id);
+          this.audio.setEffectSend(id, effectSend);
         });
       }
     });
@@ -99,11 +104,14 @@ export class Sequencer {
     if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
     if (bassInstrument) bassInstrument.setGrid(bassGrid);
 
-    // Load volumes from sync
+    // Load volumes and effect sends from sync
     this.instruments.forEach((instrument, id) => {
       const volume = this.sync!.getInstrumentVolume(id);
       instrument.setParameter('volume', volume);
       this.audio.setInstrumentVolume(id, volume);
+
+      const effectSend = this.sync!.getEffectSend(id);
+      this.audio.setEffectSend(id, effectSend);
     });
 
     // Listen to remote grid changes
@@ -133,6 +141,11 @@ export class Sequencer {
         instrument.setParameter('volume', value);
         this.audio.setInstrumentVolume(instrumentId, value);
       }
+    });
+
+    // Listen to remote effect send changes
+    this.sync.onEffectSendChange((instrumentId, value) => {
+      this.audio.setEffectSend(instrumentId, value);
     });
   }
 
@@ -197,6 +210,21 @@ export class Sequencer {
 
     const params = instrument.getParameters();
     return params.volume ?? 0.5;
+  }
+
+  setEffectSend(instrumentId: string, value: number) {
+    // Update the audio engine
+    this.audio.setEffectSend(instrumentId, value);
+
+    // Sync to other users if collaborative mode is enabled
+    if (this.sync) {
+      this.sync.setEffectSend(instrumentId, value);
+    }
+  }
+
+  getEffectSend(instrumentId: string): number {
+    // Get from audio engine
+    return this.audio.getEffectSend(instrumentId);
   }
 
   play() {

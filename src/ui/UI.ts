@@ -162,10 +162,11 @@ export class UI {
   private setupSyncUI() {
     if (!this.syncUIManager) return;
 
-    // Setup sync UI with grid and volume update callback
+    // Setup sync UI with grid, volume, and effect send update callback
     this.syncUIManager.setupSyncUI(() => {
       this.updateGridDisplay();
       this.updateVolumeDisplays();
+      this.updateEffectSendDisplays();
     });
 
     // Listen to remote grid changes and update UI in real-time
@@ -192,7 +193,7 @@ export class UI {
     });
 
     // Listen to remote volume changes and update UI
-    this.syncUIManager.setupVolumeChangeListener((instrumentId, value) => {
+    this.syncUIManager.setupVolumeChangeListener((instrumentId, _value) => {
       // Only update if this is an always-visible instrument (drums, lead1, bass) or the currently displayed instrument
       if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) return;
       const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
@@ -203,6 +204,22 @@ export class UI {
           this.leadInstrument.updateVolumeDisplay(instrumentCard);
         } else if (instrumentId === 'bass') {
           this.bassInstrument.updateVolumeDisplay(instrumentCard);
+        }
+      }
+    });
+
+    // Listen to remote effect send changes and update UI
+    this.syncUIManager.setupEffectSendChangeListener((instrumentId, _value) => {
+      // Only update if this is an always-visible instrument (drums, lead1, bass) or the currently displayed instrument
+      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) return;
+      const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
+      if (instrumentCard) {
+        if (instrumentId === 'drums') {
+          this.drumInstrument.updateEffectSendDisplay(instrumentCard);
+        } else if (instrumentId === 'lead1') {
+          this.leadInstrument.updateEffectSendDisplay(instrumentCard);
+        } else if (instrumentId === 'bass') {
+          this.bassInstrument.updateEffectSendDisplay(instrumentCard);
         }
       }
     });
@@ -266,6 +283,26 @@ export class UI {
     const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
     if (bassCard) {
       this.bassInstrument.updateVolumeDisplay(bassCard);
+    }
+  }
+
+  private updateEffectSendDisplays() {
+    // Always update drums effect send since drums are always visible
+    const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
+    if (drumCard) {
+      this.drumInstrument.updateEffectSendDisplay(drumCard);
+    }
+
+    // Always update lead1 effect send since lead1 is always visible
+    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
+    if (leadCard) {
+      this.leadInstrument.updateEffectSendDisplay(leadCard);
+    }
+
+    // Always update bass effect send since bass is always visible
+    const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
+    if (bassCard) {
+      this.bassInstrument.updateEffectSendDisplay(bassCard);
     }
   }
 
