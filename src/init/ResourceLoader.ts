@@ -5,6 +5,7 @@
 
 import { Sequencer } from '../sequencer';
 import { AudioEngine } from '../audio';
+import type { SynthType } from '../types';
 
 export class ResourceLoader {
   private isLoadingKitFromSync = false;
@@ -35,7 +36,7 @@ export class ResourceLoader {
     const lead1 = sequencer.getInstrument('lead1');
     if (lead1) {
       lead1.setParameter('synthType', synthType);
-      audio.createSynth('lead1', synthType as any);
+      audio.createSynth('lead1', synthType as SynthType);
     }
   }
 

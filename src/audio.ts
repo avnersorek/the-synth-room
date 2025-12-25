@@ -1,6 +1,9 @@
 import * as Tone from 'tone';
 import type { SynthType, BassOscillatorType } from './types';
 import { EffectsController } from './effects/EffectsController';
+import { LeadSynthFactory } from './synths/LeadSynthFactory';
+import { BassSynthFactory } from './synths/BassSynthFactory';
+import { DrumSamplerFactory } from './synths/DrumSamplerFactory';
 
 export class AudioEngine {
   private samplers: Map<string, Tone.Sampler>;
@@ -34,19 +37,12 @@ export class AudioEngine {
   async loadSample(name: string, url: string, instrumentId: string = 'drums') {
     // Create a sampler for this specific sample
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
-    const sampler = new Tone.Sampler({
-      urls: {
-        'C3': url.replace('/sounds/', './sounds/'),
-      },
-      onload: () => {
-        console.log(`Sample ${name} loaded`);
-      },
-    }).connect(instrumentVolume);
+    const sampler = DrumSamplerFactory.createSampler(name, url).connect(instrumentVolume);
 
     this.samplers.set(name, sampler);
   }
 
-  createSynth(instrumentId: string, synthType: SynthType, oscillatorType?: string) {
+  createSynth(instrumentId: string, synthType: SynthType) {
     // Dispose of existing synth if it exists
     const existingSynth = this.synths.get(instrumentId);
     if (existingSynth) {
@@ -55,28 +51,11 @@ export class AudioEngine {
 
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
 
-    // Create the appropriate synth type
-    let synth: Tone.PolySynth;
-    switch (synthType) {
-      case 'FMSynth':
-        synth = new Tone.PolySynth(Tone.FMSynth).connect(instrumentVolume);
-        break;
-      case 'AMSynth':
-        synth = new Tone.PolySynth(Tone.AMSynth).connect(instrumentVolume);
-        break;
-      case 'Synth':
-        synth = new Tone.PolySynth(Tone.Synth).connect(instrumentVolume);
-        // Set oscillator type if specified (only works with basic Synth)
-        if (oscillatorType) {
-          synth.set({ oscillator: { type: oscillatorType as any } });
-        }
-        break;
-      default:
-        synth = new Tone.PolySynth(Tone.FMSynth).connect(instrumentVolume);
-    }
+    // Create synth using factory
+    const synth = LeadSynthFactory.createSynth(synthType).connect(instrumentVolume);
 
     this.synths.set(instrumentId, synth);
-    console.log(`Created ${synthType} for ${instrumentId}${oscillatorType ? ` with ${oscillatorType} oscillator` : ''}`);
+    console.log(`Created ${synthType} preset for ${instrumentId}`);
   }
 
   createBassMonoSynth(instrumentId: string, oscillatorType: BassOscillatorType) {
@@ -88,15 +67,8 @@ export class AudioEngine {
 
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
 
-    // Create MonoSynth with specified oscillator type
-    const monoSynth = new Tone.MonoSynth({
-      oscillator: {
-        type: oscillatorType as any
-      },
-      envelope: {
-        attack: 0
-      }
-    }).connect(instrumentVolume);
+    // Create MonoSynth using factory
+    const monoSynth = BassSynthFactory.createSynth(oscillatorType).connect(instrumentVolume);
 
     this.monoSynths.set(instrumentId, monoSynth);
     console.log(`Created MonoSynth for ${instrumentId} with ${oscillatorType} oscillator`);

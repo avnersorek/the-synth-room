@@ -7,6 +7,7 @@ import { Sequencer } from '../sequencer';
 import { UI } from '../ui/UI';
 import { SyncManager } from '../sync/SyncManager';
 import { ResourceLoader } from './ResourceLoader';
+import type { SynthType } from '../types';
 
 export class RoomInitializer {
   private resourceLoader: ResourceLoader;
@@ -40,7 +41,7 @@ export class RoomInitializer {
     const lead1Instrument = sequencer.getInstrument('lead1');
     if (lead1Instrument) {
       lead1Instrument.setParameter('synthType', initialSynthType);
-      audio.createSynth('lead1', initialSynthType as any);
+      audio.createSynth('lead1', initialSynthType as SynthType);
       await lead1Instrument.loadSamples();
     }
 

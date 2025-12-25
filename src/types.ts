@@ -24,7 +24,7 @@ export interface DrumParameters extends InstrumentParameters {
   volume: number;
 }
 
-export type SynthType = 'FMSynth' | 'AMSynth' | 'Synth';
+export type SynthType = 'Jump' | 'Polly';
 export type BassOscillatorType = 'square' | 'square8' | 'sine';
 
 export interface LeadParameters extends InstrumentParameters {
@@ -71,7 +71,7 @@ export const BASS_NOTES = [
 
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
-export const SYNTH_TYPES: SynthType[] = ['FMSynth', 'AMSynth', 'Synth'];
+export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly'];
 export const BASS_OSCILLATOR_TYPES: BassOscillatorType[] = ['square', 'square8', 'sine'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
@@ -95,7 +95,7 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
     gridCols: 16,
     parameters: {
       volume: 0.5,
-      synthType: 'Synth',
+      synthType: 'Jump',
       attack: 0.01,
       decay: 0.1,
       sustain: 0.7,
