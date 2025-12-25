@@ -13,7 +13,6 @@ import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
 import { VolumeSyncManager } from './managers/VolumeSyncManager';
 import { EffectsSyncManager } from './managers/EffectsSyncManager';
-import { GridMigration } from './utils/GridMigration';
 
 export class SyncManager {
   private ydoc: Y.Doc;
@@ -56,8 +55,6 @@ export class SyncManager {
       // After sync, refresh our references to ensure we have the latest data
       if (synced) {
         this.refreshReferences();
-        // Migrate grid dimensions if needed (e.g., when config changes)
-        GridMigration.migrateGridDimensions(this.ydoc, this.instruments);
       }
 
       this.notifyConnectionChange(this.connectionStatus);
