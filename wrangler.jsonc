@@ -1,5 +1,5 @@
 {
-    // Wrangler is the CLI that uploads our dist to CloudFlair for distribution
+    // this configuration is s used in the cloudflair workers auto deploy from git main
     "name": "the-synth-room",
     "compatibility_date": "2025-12-15",
     "assets": {
