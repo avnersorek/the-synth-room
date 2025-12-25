@@ -31,7 +31,7 @@ export default class SynthRoom implements Party.Server {
     const url = new URL(request.url);
     console.log('Incoming Request', request.method, url.pathname);
 
-    if (url.pathname === "/parties/main/" + ROOMS_METADATA_ROOM_ID) {
+    if (url.pathname === `/parties/main/${  ROOMS_METADATA_ROOM_ID}`) {
       if (request.method === "GET") {
         return this.listRooms();
       } else if  (request.method === "POST") {
@@ -45,7 +45,7 @@ export default class SynthRoom implements Party.Server {
       return this.getRoomMetadata();
     }
 
-    return new Response("Not Found " + url.pathname, { status: 404 });
+    return new Response(`Not Found ${  url.pathname}`, { status: 404 });
   }
 
   // List all rooms with metadata

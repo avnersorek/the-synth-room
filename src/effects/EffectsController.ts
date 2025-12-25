@@ -57,10 +57,10 @@ export class EffectsController {
    */
   getEffectSend(instrumentId: string): number {
     const send = this.effectSends.get(instrumentId);
-    if (!send) return 0;
+    if (!send) {return 0;}
 
     const dbValue = send.volume.value;
-    if (dbValue === -Infinity) return 0;
+    if (dbValue === -Infinity) {return 0;}
     return Tone.dbToGain(dbValue);
   }
 

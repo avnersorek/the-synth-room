@@ -80,7 +80,7 @@ export class Lobby {
 
   private renderRoomsList(rooms: Room[]) {
     const roomsList = this.container.querySelector('#rooms-list');
-    if (!roomsList) return;
+    if (!roomsList) {return;}
 
     if (rooms.length === 0) {
       roomsList.innerHTML = `

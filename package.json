@@ -7,11 +7,18 @@
     "dev:server": "partykit dev --live --verbose -p 1999",
     "build": "tsc && vite build",
     "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "deploy-party": "partykit deploy --var PARTYKIT_HOST=http://the-synth-room.avnersorek.partykit.dev --var CORS_ORIGIN=https://the-synth-room.avner-sorek.workers.dev"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "eslint": "^9.39.2",
     "typescript": "^5.6.0",
+    "typescript-eslint": "^8.50.1",
     "vite": "^6.0.0",
     "vite-plugin-static-copy": "^3.1.4"
   },

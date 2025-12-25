@@ -104,7 +104,7 @@ export class AudioEngine {
 
   play(name: string, time?: number) {
     const sampler = this.samplers.get(name);
-    if (!sampler) return;
+    if (!sampler) {return;}
 
     // Play the sample at C3 (the note we loaded it at)
     // If time is provided, schedule it; otherwise play immediately
@@ -130,7 +130,7 @@ export class AudioEngine {
 
     // Otherwise use poly synth
     const synth = this.synths.get(instrumentId);
-    if (!synth) return;
+    if (!synth) {return;}
 
     // Play the note with the synth
     if (time !== undefined) {
@@ -162,9 +162,9 @@ export class AudioEngine {
 
   getInstrumentVolume(instrumentId: string): number {
     const instrumentVolume = this.instrumentVolumes.get(instrumentId);
-    if (!instrumentVolume) return 0.5; // Default volume
+    if (!instrumentVolume) {return 0.5;} // Default volume
     const dbValue = instrumentVolume.volume.value;
-    if (dbValue === -Infinity) return 0;
+    if (dbValue === -Infinity) {return 0;}
     return Tone.dbToGain(dbValue);
   }
 

@@ -56,7 +56,7 @@ export default class SynthRoomServer implements Party.Server {
             const url = new URL(request.url);
             console.log('Incoming Request', request.method, url.pathname);
 
-            if (url.pathname === "/parties/main/" + ROOMS_METADATA_ROOM_ID) {
+            if (url.pathname === `/parties/main/${  ROOMS_METADATA_ROOM_ID}`) {
                 // WE ARE IN THE ROOMS METADATA ROOM
                 if (request.method === "POST") {
                     const payload: RoomMetadata = await request.json();
@@ -75,7 +75,7 @@ export default class SynthRoomServer implements Party.Server {
                 }
             }
 
-            return this.createResponse({ error: "Not Found " + url.pathname }, 404);
+            return this.createResponse({ error: `Not Found ${  url.pathname}` }, 404);
         } catch (error) {
             console.log(`Error on ${request.method} ${request.url}`);
             console.error(error);

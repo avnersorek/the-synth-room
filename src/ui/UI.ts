@@ -160,7 +160,7 @@ export class UI {
   }
 
   private setupSyncUI() {
-    if (!this.syncUIManager) return;
+    if (!this.syncUIManager) {return;}
 
     // Setup sync UI with grid, volume, and effect send update callback
     this.syncUIManager.setupSyncUI(() => {
@@ -172,7 +172,7 @@ export class UI {
     // Listen to remote grid changes and update UI in real-time
     this.syncUIManager.setupGridChangeListener((instrumentId, row, col, value) => {
       // Only update if this is an always-visible instrument (drums, lead1, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) return;
+      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
       const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`);
       if (instrumentCard) {
         const cell = instrumentCard.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
@@ -195,7 +195,7 @@ export class UI {
     // Listen to remote volume changes and update UI
     this.syncUIManager.setupVolumeChangeListener((instrumentId, _value) => {
       // Only update if this is an always-visible instrument (drums, lead1, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) return;
+      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
       const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
       if (instrumentCard) {
         if (instrumentId === 'drums') {
@@ -211,7 +211,7 @@ export class UI {
     // Listen to remote effect send changes and update UI
     this.syncUIManager.setupEffectSendChangeListener((instrumentId, _value) => {
       // Only update if this is an always-visible instrument (drums, lead1, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) return;
+      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
       const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
       if (instrumentCard) {
         if (instrumentId === 'drums') {

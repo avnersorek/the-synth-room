@@ -37,7 +37,7 @@ export abstract class ObservableSync<T> {
       this.map.observe((event) => {
         console.log(`${this.key} change event:`, event.transaction.origin, this.map.get(this.key));
         // Don't trigger callback for local changes
-        if (event.transaction.origin === 'local') return;
+        if (event.transaction.origin === 'local') {return;}
 
         const value = this.get();
         if (value !== undefined && value !== null) {

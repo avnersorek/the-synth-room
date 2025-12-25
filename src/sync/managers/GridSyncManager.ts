@@ -89,7 +89,7 @@ export class GridSyncManager {
     }
 
     const gridArray = instrument.get('grid') as Y.Array<Y.Array<number>>;
-    if (!gridArray) return;
+    if (!gridArray) {return;}
 
     // Use the actual grid dimensions from config instead of hardcoded values
     const config = INSTRUMENTS[instrumentId];
@@ -115,7 +115,7 @@ export class GridSyncManager {
       // Use Object.keys to get all instruments from config dynamically
       Object.keys(INSTRUMENTS).forEach((instrumentId) => {
         const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
-        if (!instrument) return;
+        if (!instrument) {return;}
 
         const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
         if (!grid || grid.length === 0) {
@@ -126,11 +126,11 @@ export class GridSyncManager {
         // Observe changes within each row
         for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
           const rowArray = grid.get(rowIndex);
-          if (!rowArray) continue;
+          if (!rowArray) {continue;}
 
           rowArray.observe((event: any) => {
             // Don't trigger callback for local changes (origin === 'local')
-            if (event.transaction.origin === 'local') return;
+            if (event.transaction.origin === 'local') {return;}
 
             console.log(`Grid change detected in ${instrumentId} row ${rowIndex}`, event.changes.delta);
 

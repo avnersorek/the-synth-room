@@ -148,4 +148,4 @@ For detailed technical information, see the docs folder:
 - Update types.ts for any new configuration or interfaces
 - Document complex logic with inline comments
 - Update relevant docs/ files for architectural changes
-- ALWAYS run `npm run type-check` frequently and correct ALL issues.
+- ALWAYS run `npm run lint` & `npm run type-check` frequently and correct ALL issues.

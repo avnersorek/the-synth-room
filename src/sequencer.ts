@@ -59,7 +59,7 @@ export class Sequencer {
   }
 
   private initializeFromSync() {
-    if (!this.sync) return;
+    if (!this.sync) {return;}
 
     // Listen for connection status changes to refresh state when synced
     this.sync.onConnectionChange((status) => {
@@ -74,9 +74,9 @@ export class Sequencer {
         const lead1Instrument = this.instruments.get('lead1');
         const bassInstrument = this.instruments.get('bass');
 
-        if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
-        if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
-        if (bassInstrument) bassInstrument.setGrid(bassGrid);
+        if (drumsInstrument) {drumsInstrument.setGrid(drumsGrid);}
+        if (lead1Instrument) {lead1Instrument.setGrid(lead1Grid);}
+        if (bassInstrument) {bassInstrument.setGrid(bassGrid);}
 
         // Load volumes and effect sends from sync
         this.instruments.forEach((instrument, id) => {
@@ -100,9 +100,9 @@ export class Sequencer {
     const lead1Instrument = this.instruments.get('lead1');
     const bassInstrument = this.instruments.get('bass');
 
-    if (drumsInstrument) drumsInstrument.setGrid(drumsGrid);
-    if (lead1Instrument) lead1Instrument.setGrid(lead1Grid);
-    if (bassInstrument) bassInstrument.setGrid(bassGrid);
+    if (drumsInstrument) {drumsInstrument.setGrid(drumsGrid);}
+    if (lead1Instrument) {lead1Instrument.setGrid(lead1Grid);}
+    if (bassInstrument) {bassInstrument.setGrid(bassGrid);}
 
     // Load volumes and effect sends from sync
     this.instruments.forEach((instrument, id) => {
@@ -159,7 +159,7 @@ export class Sequencer {
 
   toggle(instrumentId: string, row: number, col: number) {
     const instrument = this.instruments.get(instrumentId);
-    if (!instrument) return;
+    if (!instrument) {return;}
 
     instrument.toggle(row, col);
 
@@ -190,7 +190,7 @@ export class Sequencer {
 
   setInstrumentVolume(instrumentId: string, value: number) {
     const instrument = this.instruments.get(instrumentId);
-    if (!instrument) return;
+    if (!instrument) {return;}
 
     // Update the instrument's volume parameter
     instrument.setParameter('volume', value);
@@ -206,7 +206,7 @@ export class Sequencer {
 
   getInstrumentVolume(instrumentId: string): number {
     const instrument = this.instruments.get(instrumentId);
-    if (!instrument) return 0.5; // Default volume
+    if (!instrument) {return 0.5;} // Default volume
 
     const params = instrument.getParameters();
     return params.volume ?? 0.5;
@@ -228,7 +228,7 @@ export class Sequencer {
   }
 
   play() {
-    if (this.loopId !== null) return;
+    if (this.loopId !== null) {return;}
 
     const transport = Tone.getTransport();
 

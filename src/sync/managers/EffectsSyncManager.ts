@@ -58,12 +58,12 @@ export class EffectsSyncManager {
       // Observe effect send changes for each instrument
       Object.keys(INSTRUMENTS).forEach((instrumentId) => {
         const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
-        if (!instrument) return;
+        if (!instrument) {return;}
 
         // Observe changes to the instrument map
         instrument.observe((event: any) => {
           // Don't trigger callback for local changes
-          if (event.transaction.origin === 'local') return;
+          if (event.transaction.origin === 'local') {return;}
 
           // Check if effectSend changed
           const changes = event.changes.keys;
