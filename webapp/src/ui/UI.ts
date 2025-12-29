@@ -12,16 +12,17 @@ import { BassInstrument } from '../components/BassInstrument';
 import { EventManager } from './managers/EventManager';
 import { SyncUIManager } from './managers/SyncUIManager';
 import { StepAnimationController } from './managers/StepAnimationController';
-import { SelectorUpdater } from './utils/SelectorUpdater';
+import { InstrumentRegistry } from './managers/InstrumentRegistry';
+import { InstrumentUIManager } from './managers/InstrumentUIManager';
+import { InstrumentSyncCoordinator } from './managers/InstrumentSyncCoordinator';
 
 export class UI {
   private sequencer: Sequencer;
   private container: HTMLElement;
   private currentInstrumentId: string = 'drums';
-  private drumInstrument: DrumInstrument;
-  private leadInstrument: LeadInstrument;
-  private lead2Instrument: LeadInstrument;
-  private bassInstrument: BassInstrument;
+  private instrumentRegistry: InstrumentRegistry;
+  private instrumentUIManager: InstrumentUIManager;
+  private instrumentSyncCoordinator: InstrumentSyncCoordinator;
   private instrumentPanel: InstrumentPanel;
   private eventManager: EventManager;
   private syncUIManager: SyncUIManager | null = null;
@@ -31,11 +32,27 @@ export class UI {
     this.sequencer = sequencer;
     this.container = container;
 
-    // Initialize components
-    this.drumInstrument = new DrumInstrument(sequencer, onKitChange);
-    this.leadInstrument = new LeadInstrument(sequencer, onSynthChange, 'lead1');
-    this.lead2Instrument = new LeadInstrument(sequencer, onLead2SynthChange, 'lead2');
-    this.bassInstrument = new BassInstrument(sequencer, onBassTypeChange);
+    // Initialize instrument components
+    const drumInstrument = new DrumInstrument(sequencer, onKitChange);
+    const leadInstrument = new LeadInstrument(sequencer, onSynthChange, 'lead1');
+    const lead2Instrument = new LeadInstrument(sequencer, onLead2SynthChange, 'lead2');
+    const bassInstrument = new BassInstrument(sequencer, onBassTypeChange);
+
+    // Initialize instrument registry
+    this.instrumentRegistry = new InstrumentRegistry(
+      drumInstrument,
+      leadInstrument,
+      lead2Instrument,
+      bassInstrument
+    );
+
+    // Initialize instrument managers
+    this.instrumentUIManager = new InstrumentUIManager(this.instrumentRegistry, container);
+    this.instrumentSyncCoordinator = new InstrumentSyncCoordinator(
+      this.instrumentRegistry,
+      container,
+      sequencer
+    );
 
     // Get all available instruments from config
     const instruments = Object.values(INSTRUMENTS);
@@ -46,7 +63,7 @@ export class UI {
       (instrumentId) => this.getInstrumentContent(instrumentId)
     );
 
-    // Initialize managers
+    // Initialize other managers
     this.eventManager = new EventManager(sequencer, container);
     this.animationController = new StepAnimationController(sequencer, container);
 
@@ -58,16 +75,7 @@ export class UI {
   }
 
   private getInstrumentContent(instrumentId: string): string {
-    if (instrumentId === 'drums') {
-      return this.drumInstrument.render();
-    } else if (instrumentId === 'lead1') {
-      return this.leadInstrument.render();
-    } else if (instrumentId === 'lead2') {
-      return this.lead2Instrument.render();
-    } else if (instrumentId === 'bass') {
-      return this.bassInstrument.render();
-    }
-    return '';
+    return this.instrumentRegistry.getInstrumentContent(instrumentId);
   }
 
   render() {
@@ -117,7 +125,7 @@ export class UI {
     `;
 
     this.attachEvents();
-    this.attachInstrumentEvents();
+    this.instrumentUIManager.attachAllInstrumentEvents();
     this.animationController.startUpdateLoop();
 
     if (this.syncUIManager) {
@@ -125,41 +133,11 @@ export class UI {
     }
   }
 
-  private attachInstrumentEvents() {
-    // Always attach drum events since drums are always visible
-    const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
-    if (drumCard) {
-      this.drumInstrument.attachEvents(drumCard);
-      this.drumInstrument.updateGridDisplay(drumCard);
-    }
-
-    // Always attach lead1 events since lead1 is always visible
-    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
-    if (leadCard) {
-      this.leadInstrument.attachEvents(leadCard);
-      this.leadInstrument.updateGridDisplay(leadCard);
-    }
-
-    // Always attach lead2 events since lead2 is always visible
-    const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
-    if (lead2Card) {
-      this.lead2Instrument.attachEvents(lead2Card);
-      this.lead2Instrument.updateGridDisplay(lead2Card);
-    }
-
-    // Always attach bass events since bass is always visible
-    const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
-    if (bassCard) {
-      this.bassInstrument.attachEvents(bassCard);
-      this.bassInstrument.updateGridDisplay(bassCard);
-    }
-  }
-
   private onInstrumentChange(instrumentId: string) {
     this.currentInstrumentId = instrumentId;
     this.instrumentPanel.updateActiveCard(instrumentId);
     // Re-attach events after panel updates
-    setTimeout(() => this.attachInstrumentEvents(), 0);
+    setTimeout(() => this.instrumentUIManager.attachAllInstrumentEvents(), 0);
   }
 
   private attachEvents() {
@@ -175,25 +153,16 @@ export class UI {
 
     // Setup sync UI with grid, volume, and effect send update callback
     this.syncUIManager.setupSyncUI(() => {
-      this.updateGridDisplay();
-      this.updateVolumeDisplays();
-      this.updateEffectSendDisplays();
+      this.instrumentUIManager.updateAllGridDisplays();
+      this.instrumentUIManager.updateAllVolumeDisplays();
+      this.instrumentUIManager.updateAllEffectSendDisplays();
     });
 
-    // Listen to remote grid changes and update UI in real-time
-    this.syncUIManager.setupGridChangeListener((instrumentId, row, col, value) => {
-      // Only update if this is an always-visible instrument (drums, lead1, lead2, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'lead2' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
-      const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`);
-      if (instrumentCard) {
-        const cell = instrumentCard.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-        if (cell) {
-          cell.classList.toggle('active', value);
-        } else {
-          console.warn(`UI: Cell not found for [${row}, ${col}]`);
-        }
-      }
-    });
+    // Setup instrument sync listeners through coordinator
+    this.instrumentSyncCoordinator.setupGridChangeListener(this.syncUIManager);
+    this.instrumentSyncCoordinator.setupVolumeChangeListener(this.syncUIManager);
+    this.instrumentSyncCoordinator.setupEffectSendChangeListener(this.syncUIManager);
+    this.instrumentSyncCoordinator.setupStepUpdateListener();
 
     // Listen to remote BPM changes and update UI
     this.syncUIManager.setupBpmChangeListener((bpm) => {
@@ -202,178 +171,33 @@ export class UI {
         bpmInput.value = bpm.toString();
       }
     });
-
-    // Listen to remote volume changes and update UI
-    this.syncUIManager.setupVolumeChangeListener((instrumentId, _value) => {
-      // Only update if this is an always-visible instrument (drums, lead1, lead2, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'lead2' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
-      const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
-      if (instrumentCard) {
-        if (instrumentId === 'drums') {
-          this.drumInstrument.updateVolumeDisplay(instrumentCard);
-        } else if (instrumentId === 'lead1') {
-          this.leadInstrument.updateVolumeDisplay(instrumentCard);
-        } else if (instrumentId === 'lead2') {
-          this.lead2Instrument.updateVolumeDisplay(instrumentCard);
-        } else if (instrumentId === 'bass') {
-          this.bassInstrument.updateVolumeDisplay(instrumentCard);
-        }
-      }
-    });
-
-    // Listen to remote effect send changes and update UI
-    this.syncUIManager.setupEffectSendChangeListener((instrumentId, _value) => {
-      // Only update if this is an always-visible instrument (drums, lead1, lead2, bass) or the currently displayed instrument
-      if (instrumentId !== 'drums' && instrumentId !== 'lead1' && instrumentId !== 'lead2' && instrumentId !== 'bass' && instrumentId !== this.currentInstrumentId) {return;}
-      const instrumentCard = this.container.querySelector(`[data-instrument-id="${instrumentId}"] .instrument-card-content`) as HTMLElement;
-      if (instrumentCard) {
-        if (instrumentId === 'drums') {
-          this.drumInstrument.updateEffectSendDisplay(instrumentCard);
-        } else if (instrumentId === 'lead1') {
-          this.leadInstrument.updateEffectSendDisplay(instrumentCard);
-        } else if (instrumentId === 'lead2') {
-          this.lead2Instrument.updateEffectSendDisplay(instrumentCard);
-        } else if (instrumentId === 'bass') {
-          this.bassInstrument.updateEffectSendDisplay(instrumentCard);
-        }
-      }
-    });
-
-    // Update step displays for instruments
-    this.sequencer.onStep((currentStep: number) => {
-      // Always update drums since they're always visible
-      const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
-      if (drumCard) {
-        this.drumInstrument.updateCurrentStep(drumCard, currentStep);
-      }
-
-      // Always update lead1 since it's always visible
-      const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
-      if (leadCard) {
-        this.leadInstrument.updateCurrentStep(leadCard, currentStep);
-      }
-
-      // Always update lead2 since it's always visible
-      const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
-      if (lead2Card) {
-        this.lead2Instrument.updateCurrentStep(lead2Card, currentStep);
-      }
-
-      // Always update bass since it's always visible
-      const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
-      if (bassCard) {
-        this.bassInstrument.updateCurrentStep(bassCard, currentStep);
-      }
-    });
-  }
-
-  private updateGridDisplay() {
-    // Always update drums grid since drums are always visible
-    const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
-    if (drumCard) {
-      this.drumInstrument.updateGridDisplay(drumCard);
-    }
-
-    // Always update lead1 grid since lead1 is always visible
-    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
-    if (leadCard) {
-      this.leadInstrument.updateGridDisplay(leadCard);
-    }
-
-    // Always update lead2 grid since lead2 is always visible
-    const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
-    if (lead2Card) {
-      this.lead2Instrument.updateGridDisplay(lead2Card);
-    }
-
-    // Always update bass grid since bass is always visible
-    const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
-    if (bassCard) {
-      this.bassInstrument.updateGridDisplay(bassCard);
-    }
-  }
-
-  private updateVolumeDisplays() {
-    // Always update drums volume since drums are always visible
-    const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
-    if (drumCard) {
-      this.drumInstrument.updateVolumeDisplay(drumCard);
-    }
-
-    // Always update lead1 volume since lead1 is always visible
-    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
-    if (leadCard) {
-      this.leadInstrument.updateVolumeDisplay(leadCard);
-    }
-
-    // Always update lead2 volume since lead2 is always visible
-    const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
-    if (lead2Card) {
-      this.lead2Instrument.updateVolumeDisplay(lead2Card);
-    }
-
-    // Always update bass volume since bass is always visible
-    const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
-    if (bassCard) {
-      this.bassInstrument.updateVolumeDisplay(bassCard);
-    }
-  }
-
-  private updateEffectSendDisplays() {
-    // Always update drums effect send since drums are always visible
-    const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
-    if (drumCard) {
-      this.drumInstrument.updateEffectSendDisplay(drumCard);
-    }
-
-    // Always update lead1 effect send since lead1 is always visible
-    const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
-    if (leadCard) {
-      this.leadInstrument.updateEffectSendDisplay(leadCard);
-    }
-
-    // Always update lead2 effect send since lead2 is always visible
-    const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
-    if (lead2Card) {
-      this.lead2Instrument.updateEffectSendDisplay(lead2Card);
-    }
-
-    // Always update bass effect send since bass is always visible
-    const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
-    if (bassCard) {
-      this.bassInstrument.updateEffectSendDisplay(bassCard);
-    }
   }
 
   updateKitSelector(kitName: string) {
-    // Always update drums kit selector since drums are always visible
     const drumCard = this.container.querySelector(`[data-instrument-id="drums"] .instrument-card-content`) as HTMLElement;
     if (drumCard) {
-      SelectorUpdater.updateSelector(drumCard, 'kit', kitName);
+      this.instrumentRegistry.updateSelector('drums', drumCard, kitName);
     }
   }
 
   updateSynthSelector(synthType: string) {
-    // Always update lead1 synth selector since lead1 is always visible
     const leadCard = this.container.querySelector(`[data-instrument-id="lead1"] .instrument-card-content`) as HTMLElement;
     if (leadCard) {
-      SelectorUpdater.updateSelector(leadCard, 'synth-type', synthType);
+      this.instrumentRegistry.updateSelector('lead1', leadCard, synthType);
     }
   }
 
   updateLead2SynthSelector(synthType: string) {
-    // Always update lead2 synth selector since lead2 is always visible
     const lead2Card = this.container.querySelector(`[data-instrument-id="lead2"] .instrument-card-content`) as HTMLElement;
     if (lead2Card) {
-      SelectorUpdater.updateSelector(lead2Card, 'synth-type', synthType);
+      this.instrumentRegistry.updateSelector('lead2', lead2Card, synthType);
     }
   }
 
   updateBassTypeSelector(bassType: string) {
-    // Always update bass type selector since bass is always visible
     const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
     if (bassCard) {
-      SelectorUpdater.updateSelector(bassCard, 'bass-type', bassType);
+      this.instrumentRegistry.updateSelector('bass', bassCard, bassType);
     }
   }
 }
