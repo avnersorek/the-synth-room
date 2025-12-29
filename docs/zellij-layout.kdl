@@ -9,17 +9,17 @@ layout {
         }
     }
 
-    tab name="Webapp" focus=true {
+    tab name="Webapp" cwd="webapp" focus=true {
         pane {
             command "npm"
             args "run" "dev"
         }
     }
 
-    tab name="Partykit local (backend)" {
+    tab name="Partykit local (backend)" cwd="party" {
         pane {
             command "npm"
-            args "run" "dev:server"
+            args "run" "dev"
         }
     }
 }

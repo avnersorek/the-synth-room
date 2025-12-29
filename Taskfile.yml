@@ -1,0 +1,41 @@
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  run-local:
+    cmds:
+      - zellij --layout docs//zellij-layout.kdl
+
+  ci:party:
+    desc: Run CI checks for party
+    dir: party
+    cmds:
+      - |
+        EXIT_CODE=0
+        npm run lint || EXIT_CODE=$?
+        npm run type-check || EXIT_CODE=$?
+        exit $EXIT_CODE
+
+  ci:webapp:
+    desc: Run CI checks for webapp
+    dir: webapp
+    cmds:
+      - |
+        EXIT_CODE=0
+        npm run lint || EXIT_CODE=$?
+        npm run type-check || EXIT_CODE=$?
+        exit $EXIT_CODE
+
+  ci:
+    desc: Run CI checks for all projects
+    cmds:
+      - |
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        echo "!! Super Broken Right Now f$@%!!"
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        EXIT_CODE=0
+        task ci:party || EXIT_CODE=$?
+        task ci:webapp || EXIT_CODE=$?
+        exit $EXIT_CODE

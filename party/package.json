@@ -1,0 +1,26 @@
+{
+  "name": "the-synth-room-party",
+  "version": "1.0.0",
+  "description": "partykit source",
+  "main": "index.js",
+  "scripts": {
+    "dev": "partykit dev --live --verbose -p 1999",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "deploy": "partykit deploy --var PARTYKIT_HOST=http://the-synth-room.avnersorek.partykit.dev --var CORS_ORIGIN=https://the-synth-room.avner-sorek.workers.dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.50.1"
+  },
+  "dependencies": {
+    "partykit": "^0.0.115",
+    "y-partykit": "^0.0.33",
+    "yjs": "^13.6.27"
+  }
+}

@@ -1,6 +1,5 @@
 import type * as Party from "partykit/server";
 
-
 export default class RoomsMetadataRoomClient {
   constructor(readonly room: Party.Room) {}
 
