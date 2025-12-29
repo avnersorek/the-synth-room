@@ -15,6 +15,8 @@ export class LeadSynthFactory {
         return this.createJumpSynth();
       case 'Polly':
         return this.createPollySynth();
+      case 'Tiny':
+        return this.createTinySynth();
       default:
         // Default to Jump preset
         return this.createJumpSynth();
@@ -49,6 +51,39 @@ export class LeadSynthFactory {
       oscillator: {
         partials: [0, 2, 3, 4],
       },
+    });
+  }
+
+  /**
+   * Tiny preset: AM synthesis for bell-like tones
+   * Uses amplitude modulation with fast attack and long decay
+   */
+  private static createTinySynth(): Tone.PolySynth {
+    return new Tone.PolySynth(Tone.AMSynth, {
+      harmonicity: 2,
+      oscillator: {
+        type: "amsine2",
+        modulationType: "sine",
+        harmonicity: 1.01
+      },
+      envelope: {
+        attack: 0.006,
+        decay: 4,
+        sustain: 0.04,
+        release: 1.2
+      },
+      modulation: {
+        volume: 13,
+        type: "amsine2",
+        modulationType: "sine",
+        harmonicity: 12
+      },
+      modulationEnvelope: {
+        attack: 0.006,
+        decay: 0.2,
+        sustain: 0.2,
+        release: 0.4
+      }
     });
   }
 }

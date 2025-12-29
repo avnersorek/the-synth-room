@@ -13,6 +13,8 @@ export class BassSynthFactory {
     switch (bassType) {
       case 'Guitar':
         return this.createGuitarSynth();
+      case 'Bassy':
+        return this.createBassySynth();
       default:
         // Default to Guitar preset
         return this.createGuitarSynth();
@@ -49,6 +51,38 @@ export class BassSynthFactory {
         release: 1.5,
         baseFrequency: 50,
         octaves: 4.4
+      }
+    });
+  }
+
+  /**
+   * Bassy preset: Warm evolving bass with harmonic partials
+   * Uses custom harmonic oscillator with controlled filter movement
+   */
+  private static createBassySynth(): Tone.MonoSynth {
+    return new Tone.MonoSynth({
+      portamento: 0.08,
+      oscillator: {
+        partials: [2, 1, 3, 2, 0.4]
+      },
+      filter: {
+        Q: 4,
+        type: "lowpass",
+        rolloff: -48
+      },
+      envelope: {
+        attack: 0.04,
+        decay: 0.06,
+        sustain: 0.4,
+        release: 1
+      },
+      filterEnvelope: {
+        attack: 0.01,
+        decay: 0.1,
+        sustain: 0.6,
+        release: 1.5,
+        baseFrequency: 50,
+        octaves: 3.4
       }
     });
   }

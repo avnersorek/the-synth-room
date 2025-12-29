@@ -24,8 +24,8 @@ export interface DrumParameters extends InstrumentParameters {
   volume: number;
 }
 
-export type SynthType = 'Jump' | 'Polly';
-export type BassType = 'Guitar';
+export type SynthType = 'Jump' | 'Polly' | 'Tiny';
+export type BassType = 'Guitar' | 'Bassy';
 
 export interface LeadParameters extends InstrumentParameters {
   volume: number;
@@ -71,8 +71,8 @@ export const BASS_NOTES = [
 
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
-export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly'];
-export const BASS_TYPES: BassType[] = ['Guitar'];
+export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly', 'Tiny'];
+export const BASS_TYPES: BassType[] = ['Guitar', 'Bassy'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
   drums: {
