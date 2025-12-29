@@ -8,9 +8,9 @@ import { ConnectionStatus } from '../types';
 
 export class VolumeSyncManager {
   private ydoc: Y.Doc;
-  private instruments: Y.Map<any>;
+  private instruments: Y.Map<unknown>;
 
-  constructor(ydoc: Y.Doc, instruments: Y.Map<any>) {
+  constructor(ydoc: Y.Doc, instruments: Y.Map<unknown>) {
     this.ydoc = ydoc;
     this.instruments = instruments;
   }
@@ -19,14 +19,14 @@ export class VolumeSyncManager {
    * Get volume for a specific instrument
    */
   getVolume(instrumentId: string): number {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       // Return default volume from config
       const config = INSTRUMENTS[instrumentId];
       return config?.parameters.volume ?? 0.5;
     }
 
-    const volume = instrument.get('volume');
+    const volume = instrument.get('volume') as number;
     if (volume === undefined || volume === null) {
       // Return default volume from config
       const config = INSTRUMENTS[instrumentId];
@@ -40,7 +40,7 @@ export class VolumeSyncManager {
    * Set volume for a specific instrument (marked as local change)
    */
   setVolume(instrumentId: string, value: number): void {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       console.warn(`Instrument ${instrumentId} not found`);
       return;
@@ -61,18 +61,18 @@ export class VolumeSyncManager {
     const setupObservers = () => {
       // Observe volume changes for each instrument
       Object.keys(INSTRUMENTS).forEach((instrumentId) => {
-        const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+        const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
         if (!instrument) {return;}
 
         // Observe changes to the instrument map
-        instrument.observe((event: any) => {
+        instrument.observe((event) => {
           // Don't trigger callback for local changes
           if (event.transaction.origin === 'local') {return;}
 
           // Check if volume changed
           const changes = event.changes.keys;
           if (changes.has('volume')) {
-            const value = instrument.get('volume');
+            const value = instrument.get('volume') as number;
             console.log(`Volume change detected for ${instrumentId}: ${value}`);
             callback(instrumentId, value);
           }

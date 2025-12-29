@@ -131,11 +131,11 @@ export class Instrument {
       );
       this.state.currentKit = kitName;
     } else if (this.config.type === 'lead') {
-      // For bass, create a MonoSynth with oscillator type
+      // For bass, create a MonoSynth with bass type
       if (this.config.id === 'bass') {
-        const oscillatorType = (this.state.parameters as any).oscillatorType || 'square';
-        this.audio.createBassMonoSynth(this.config.id, oscillatorType);
-        console.log(`Bass instrument ${this.config.id} ready with MonoSynth (${oscillatorType})`);
+        const bassType = (this.state.parameters as any).bassType || 'Guitar';
+        this.audio.createBassMonoSynth(this.config.id, bassType);
+        console.log(`Bass instrument ${this.config.id} ready with ${bassType} preset`);
       } else {
         // For other lead synths, create the poly synth
         const synthType = (this.state.parameters as any).synthType || 'Synth';

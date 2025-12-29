@@ -8,9 +8,9 @@ import { ConnectionStatus } from '../types';
 
 export class GridSyncManager {
   private ydoc: Y.Doc;
-  private instruments: Y.Map<any>;
+  private instruments: Y.Map<unknown>;
 
-  constructor(ydoc: Y.Doc, instruments: Y.Map<any>) {
+  constructor(ydoc: Y.Doc, instruments: Y.Map<unknown>) {
     this.ydoc = ydoc;
     this.instruments = instruments;
   }
@@ -24,7 +24,7 @@ export class GridSyncManager {
     const defaultRows = config?.gridRows || 8;
     const defaultCols = config?.gridCols || 16;
 
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       return Array(defaultRows).fill(null).map(() => Array(defaultCols).fill(false));
     }
@@ -50,7 +50,7 @@ export class GridSyncManager {
    * Toggle a grid cell
    */
   toggleCell(instrumentId: string, row: number, col: number): void {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       console.warn(`Instrument ${instrumentId} not found`);
       return;
@@ -82,7 +82,7 @@ export class GridSyncManager {
    * Set entire grid state (for initialization)
    */
   setGrid(instrumentId: string, grid: boolean[][]): void {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       console.warn(`Instrument ${instrumentId} not found`);
       return;
@@ -114,7 +114,7 @@ export class GridSyncManager {
     const setupObservers = () => {
       // Use Object.keys to get all instruments from config dynamically
       Object.keys(INSTRUMENTS).forEach((instrumentId) => {
-        const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+        const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
         if (!instrument) {return;}
 
         const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
@@ -128,7 +128,7 @@ export class GridSyncManager {
           const rowArray = grid.get(rowIndex);
           if (!rowArray) {continue;}
 
-          rowArray.observe((event: any) => {
+          rowArray.observe((event) => {
             // Don't trigger callback for local changes (origin === 'local')
             if (event.transaction.origin === 'local') {return;}
 
@@ -136,10 +136,11 @@ export class GridSyncManager {
 
             // Check what changed in this row using the delta
             let position = 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             event.changes.delta.forEach((change: any) => {
               if (change.retain !== undefined) {
                 // Skip retained items
-                position += change.retain;
+                position += change.retain as number;
               } else if (change.delete !== undefined) {
                 // Items were deleted - skip to next position
                 // position stays the same because items are deleted

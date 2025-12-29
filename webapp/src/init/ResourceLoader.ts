@@ -5,11 +5,12 @@
 
 import { Sequencer } from '../sequencer';
 import { AudioEngine } from '../audio';
-import type { SynthType } from '../types';
+import type { SynthType, BassType } from '../types';
 
 export class ResourceLoader {
   private isLoadingKitFromSync = false;
   private isLoadingSynthTypeFromSync = false;
+  private isLoadingBassTypeFromSync = false;
 
   /**
    * Load a drum kit
@@ -41,6 +42,17 @@ export class ResourceLoader {
   }
 
   /**
+   * Load a bass type for the bass instrument
+   */
+  loadBassType(sequencer: Sequencer, audio: AudioEngine, bassType: string): void {
+    const bass = sequencer.getInstrument('bass');
+    if (bass) {
+      bass.setParameter('bassType', bassType);
+      audio.createBassMonoSynth('bass', bassType as BassType);
+    }
+  }
+
+  /**
    * Check if currently loading kit from sync
    */
   isLoadingKit(): boolean {
@@ -55,6 +67,13 @@ export class ResourceLoader {
   }
 
   /**
+   * Check if currently loading bass type from sync
+   */
+  isLoadingBassType(): boolean {
+    return this.isLoadingBassTypeFromSync;
+  }
+
+  /**
    * Set loading kit flag
    */
   setLoadingKit(loading: boolean): void {
@@ -66,5 +85,12 @@ export class ResourceLoader {
    */
   setLoadingSynthType(loading: boolean): void {
     this.isLoadingSynthTypeFromSync = loading;
+  }
+
+  /**
+   * Set loading bass type flag
+   */
+  setLoadingBassType(loading: boolean): void {
+    this.isLoadingBassTypeFromSync = loading;
   }
 }

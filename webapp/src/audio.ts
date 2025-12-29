@@ -1,5 +1,5 @@
 import * as Tone from 'tone';
-import type { SynthType, BassOscillatorType } from './types';
+import type { SynthType, BassType } from './types';
 import { EffectsController } from './effects/EffectsController';
 import { LeadSynthFactory } from './synths/LeadSynthFactory';
 import { BassSynthFactory } from './synths/BassSynthFactory';
@@ -58,7 +58,7 @@ export class AudioEngine {
     console.log(`Created ${synthType} preset for ${instrumentId}`);
   }
 
-  createBassMonoSynth(instrumentId: string, oscillatorType: BassOscillatorType) {
+  createBassMonoSynth(instrumentId: string, bassType: BassType) {
     // Dispose of existing mono synth if it exists
     const existingMonoSynth = this.monoSynths.get(instrumentId);
     if (existingMonoSynth) {
@@ -68,10 +68,10 @@ export class AudioEngine {
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
 
     // Create MonoSynth using factory
-    const monoSynth = BassSynthFactory.createSynth(oscillatorType).connect(instrumentVolume);
+    const monoSynth = BassSynthFactory.createSynth(bassType).connect(instrumentVolume);
 
     this.monoSynths.set(instrumentId, monoSynth);
-    console.log(`Created MonoSynth for ${instrumentId} with ${oscillatorType} oscillator`);
+    console.log(`Created ${bassType} preset for ${instrumentId}`);
   }
 
   play(name: string, time?: number) {

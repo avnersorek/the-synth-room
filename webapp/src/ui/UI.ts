@@ -26,14 +26,14 @@ export class UI {
   private syncUIManager: SyncUIManager | null = null;
   private animationController: StepAnimationController;
 
-  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>, onSynthChange: (synthType: string) => void, onBassOscillatorChange: (oscillatorType: string) => void) {
+  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>, onSynthChange: (synthType: string) => void, onBassTypeChange: (bassType: string) => void) {
     this.sequencer = sequencer;
     this.container = container;
 
     // Initialize components
     this.drumInstrument = new DrumInstrument(sequencer, onKitChange);
     this.leadInstrument = new LeadInstrument(sequencer, onSynthChange);
-    this.bassInstrument = new BassInstrument(sequencer, onBassOscillatorChange);
+    this.bassInstrument = new BassInstrument(sequencer, onBassTypeChange);
 
     // Get all available instruments from config
     const instruments = Object.values(INSTRUMENTS);
@@ -322,11 +322,11 @@ export class UI {
     }
   }
 
-  updateBassOscillatorSelector(oscillatorType: string) {
-    // Always update bass oscillator selector since bass is always visible
+  updateBassTypeSelector(bassType: string) {
+    // Always update bass type selector since bass is always visible
     const bassCard = this.container.querySelector(`[data-instrument-id="bass"] .instrument-card-content`) as HTMLElement;
     if (bassCard) {
-      SelectorUpdater.updateSelector(bassCard, 'bass-oscillator-type', oscillatorType);
+      SelectorUpdater.updateSelector(bassCard, 'bass-type', bassType);
     }
   }
 }

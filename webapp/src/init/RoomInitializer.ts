@@ -7,7 +7,7 @@ import { Sequencer } from '../sequencer';
 import { UI } from '../ui/UI';
 import { SyncManager } from '../sync/SyncManager';
 import { ResourceLoader } from './ResourceLoader';
-import type { SynthType } from '../types';
+import type { SynthType, BassType } from '../types';
 
 export class RoomInitializer {
   private resourceLoader: ResourceLoader;
@@ -45,11 +45,12 @@ export class RoomInitializer {
       await lead1Instrument.loadSamples();
     }
 
-    // Initialize bass synth with MonoSynth and square oscillator
+    // Initialize bass synth with initial bass type from sync
+    const initialBassType = sync.getBassType();
     const bassInstrument = sequencer.getInstrument('bass');
     if (bassInstrument) {
-      bassInstrument.setParameter('oscillatorType', 'square');
-      audio.createBassMonoSynth('bass', 'square');
+      bassInstrument.setParameter('bassType', initialBassType);
+      audio.createBassMonoSynth('bass', initialBassType as BassType);
       await bassInstrument.loadSamples();
     }
 
@@ -73,16 +74,16 @@ export class RoomInitializer {
       this.resourceLoader.loadSynthType(sequencer, audio, synthType);
     };
 
-    // Handle bass oscillator type changes
-    const onBassOscillatorChange = (oscillatorType: string) => {
-      const bassInstrument = sequencer.getInstrument('bass');
-      if (bassInstrument) {
-        bassInstrument.setParameter('oscillatorType', oscillatorType);
-        audio.createBassMonoSynth('bass', oscillatorType as any);
+    // Handle bass type changes
+    const onBassTypeChange = (bassType: string) => {
+      // Update sync if this is a local change
+      if (!this.resourceLoader.isLoadingBassType()) {
+        sync.setBassType(bassType);
       }
+      this.resourceLoader.loadBassType(sequencer, audio, bassType);
     };
 
-    const ui = new UI(sequencer, app, onKitChange, onSynthChange, onBassOscillatorChange);
+    const ui = new UI(sequencer, app, onKitChange, onSynthChange, onBassTypeChange);
 
     // Listen to remote kit changes
     sync.onKitChange(async (kitName) => {
@@ -116,9 +117,26 @@ export class RoomInitializer {
       }
     });
 
+    // Listen to remote bass type changes
+    sync.onBassTypeChange((type) => {
+      console.log(`RoomInitializer: Remote bass type change detected: "${type}"`);
+      this.resourceLoader.setLoadingBassType(true);
+      try {
+        this.resourceLoader.loadBassType(sequencer, audio, type);
+        // Update UI bass selector to reflect the change
+        ui.updateBassTypeSelector(type);
+        console.log(`RoomInitializer: Bass type "${type}" loaded successfully`);
+      } catch (error) {
+        console.error(`RoomInitializer: Error loading bass type "${type}":`, error);
+      } finally {
+        this.resourceLoader.setLoadingBassType(false);
+      }
+    });
+
     ui.render();
 
     // Update selectors to reflect initial state from sync
     ui.updateSynthSelector(initialSynthType);
+    ui.updateBassTypeSelector(initialBassType);
   }
 }

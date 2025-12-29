@@ -7,11 +7,11 @@ import * as Y from 'yjs';
 import { ConnectionStatus } from '../types';
 
 export abstract class ObservableSync<T> {
-  protected map: Y.Map<any>;
+  protected map: Y.Map<unknown>;
   protected key: string;
   protected onConnectionChangeCallbacks: ((status: ConnectionStatus) => void)[] = [];
 
-  constructor(map: Y.Map<any>, key: string) {
+  constructor(map: Y.Map<unknown>, key: string) {
     this.map = map;
     this.key = key;
   }
@@ -41,7 +41,7 @@ export abstract class ObservableSync<T> {
 
         const value = this.get();
         if (value !== undefined && value !== null) {
-          console.log(`on${this.key}Change: Calling callback with ${this.key} "${value}"`);
+          console.log(`on${this.key}Change: Calling callback with ${this.key} "${String(value)}"`);
           callback(value);
         }
       });

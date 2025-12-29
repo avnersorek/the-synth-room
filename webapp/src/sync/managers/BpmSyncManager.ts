@@ -4,11 +4,12 @@
 
 import * as Y from 'yjs';
 import { ObservableSync } from '../utils/ObservableSync';
+import { ConnectionStatus } from '../types';
 
 export class BpmSyncManager extends ObservableSync<number> {
   private ydoc: Y.Doc;
 
-  constructor(ydoc: Y.Doc, bpmMap: Y.Map<any>) {
+  constructor(ydoc: Y.Doc, bpmMap: Y.Map<unknown>) {
     super(bpmMap, 'value');
     this.ydoc = ydoc;
   }
@@ -17,7 +18,7 @@ export class BpmSyncManager extends ObservableSync<number> {
    * Get current BPM
    */
   get(): number {
-    return this.map.get(this.key) || 120;
+    return this.map.get(this.key) as number || 120;
   }
 
   /**
@@ -32,7 +33,7 @@ export class BpmSyncManager extends ObservableSync<number> {
   /**
    * Listen to BPM changes from remote users
    */
-  onBpmChange(callback: (value: number) => void, onConnectionChange?: (cb: any) => void): void {
+  onBpmChange(callback: (value: number) => void, onConnectionChange?: (cb: (status: ConnectionStatus) => void) => void): void {
     this.onChange(callback, onConnectionChange);
   }
 }

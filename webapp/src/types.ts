@@ -25,7 +25,7 @@ export interface DrumParameters extends InstrumentParameters {
 }
 
 export type SynthType = 'Jump' | 'Polly';
-export type BassOscillatorType = 'square' | 'square8' | 'sine';
+export type BassType = 'Guitar';
 
 export interface LeadParameters extends InstrumentParameters {
   volume: number;
@@ -40,7 +40,7 @@ export interface LeadParameters extends InstrumentParameters {
 
 export interface BassParameters extends InstrumentParameters {
   volume: number;
-  oscillatorType?: BassOscillatorType;
+  bassType?: BassType;
   attack?: number;
   decay?: number;
   sustain?: number;
@@ -72,7 +72,7 @@ export const BASS_NOTES = [
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
 export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly'];
-export const BASS_OSCILLATOR_TYPES: BassOscillatorType[] = ['square', 'square8', 'sine'];
+export const BASS_TYPES: BassType[] = ['Guitar'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
   drums: {
@@ -113,11 +113,11 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
     gridCols: 16,
     parameters: {
       volume: 0.5,
-      oscillatorType: 'square',
-      attack: 0,
+      bassType: 'Guitar',
+      attack: 0.01,
       decay: 0.1,
-      sustain: 0.7,
-      release: 0.3,
+      sustain: 0.4,
+      release: 2,
     }
   }
 };

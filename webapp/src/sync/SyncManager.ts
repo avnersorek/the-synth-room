@@ -11,13 +11,14 @@ import { GridSyncManager } from './managers/GridSyncManager';
 import { BpmSyncManager } from './managers/BpmSyncManager';
 import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
+import { BassTypeSyncManager } from './managers/BassTypeSyncManager';
 import { VolumeSyncManager } from './managers/VolumeSyncManager';
 import { EffectsSyncManager } from './managers/EffectsSyncManager';
 
 export class SyncManager {
   private ydoc: Y.Doc;
   private provider: PartyKitProvider;
-  private instruments!: Y.Map<any>;
+  private instruments!: Y.Map<unknown>;
   private connectionCallbacks: ((status: ConnectionStatus) => void)[] = [];
   private connectionStatus: ConnectionStatus = { connected: false, synced: false };
 
@@ -26,6 +27,7 @@ export class SyncManager {
   private bpmManager!: BpmSyncManager;
   private kitManager!: KitSyncManager;
   private synthTypeManager!: SynthTypeSyncManager;
+  private bassTypeManager!: BassTypeSyncManager;
   private volumeManager!: VolumeSyncManager;
   private effectsManager!: EffectsSyncManager;
 
@@ -109,6 +111,12 @@ export class SyncManager {
       synthType.set('type', 'Synth');
     }
 
+    // Initialize bass type map (for bass instrument)
+    const bassType = this.ydoc.getMap('bassType');
+    if (!bassType.has('type')) {
+      bassType.set('type', 'Guitar');
+    }
+
     // Initialize BPM at root level (shared across all instruments)
     const bpm = this.ydoc.getMap('bpm');
     if (!bpm.has('value')) {
@@ -122,6 +130,7 @@ export class SyncManager {
     this.bpmManager = new BpmSyncManager(this.ydoc, this.ydoc.getMap('bpm'));
     this.kitManager = new KitSyncManager(this.ydoc, this.ydoc.getMap('kit'));
     this.synthTypeManager = new SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('synthType'));
+    this.bassTypeManager = new BassTypeSyncManager(this.ydoc, this.ydoc.getMap('bassType'));
     this.volumeManager = new VolumeSyncManager(this.ydoc, this.instruments);
     this.effectsManager = new EffectsSyncManager(this.ydoc, this.instruments);
   }
@@ -188,6 +197,19 @@ export class SyncManager {
 
   onSynthTypeChange(callback: (type: string) => void) {
     this.synthTypeManager.onSynthTypeChange(callback, (cb) => this.onConnectionChange(cb));
+  }
+
+  // Bass type operations - delegate to BassTypeSyncManager
+  getBassType(): string {
+    return this.bassTypeManager.get();
+  }
+
+  setBassType(type: string) {
+    this.bassTypeManager.set(type);
+  }
+
+  onBassTypeChange(callback: (type: string) => void) {
+    this.bassTypeManager.onBassTypeChange(callback, (cb) => this.onConnectionChange(cb));
   }
 
   // Volume operations - delegate to VolumeSyncManager

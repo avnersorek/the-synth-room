@@ -8,9 +8,9 @@ import { ConnectionStatus } from '../types';
 
 export class EffectsSyncManager {
   private ydoc: Y.Doc;
-  private instruments: Y.Map<any>;
+  private instruments: Y.Map<unknown>;
 
-  constructor(ydoc: Y.Doc, instruments: Y.Map<any>) {
+  constructor(ydoc: Y.Doc, instruments: Y.Map<unknown>) {
     this.ydoc = ydoc;
     this.instruments = instruments;
   }
@@ -19,12 +19,12 @@ export class EffectsSyncManager {
    * Get effect send value for a specific instrument
    */
   getEffectSend(instrumentId: string): number {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       return 0; // Default: no effect send
     }
 
-    const effectSend = instrument.get('effectSend');
+    const effectSend = instrument.get('effectSend') as number;
     if (effectSend === undefined || effectSend === null) {
       return 0; // Default: no effect send
     }
@@ -36,7 +36,7 @@ export class EffectsSyncManager {
    * Set effect send value for a specific instrument (marked as local change)
    */
   setEffectSend(instrumentId: string, value: number): void {
-    const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
       console.warn(`Instrument ${instrumentId} not found`);
       return;
@@ -57,18 +57,18 @@ export class EffectsSyncManager {
     const setupObservers = () => {
       // Observe effect send changes for each instrument
       Object.keys(INSTRUMENTS).forEach((instrumentId) => {
-        const instrument = this.instruments.get(instrumentId) as Y.Map<any>;
+        const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
         if (!instrument) {return;}
 
         // Observe changes to the instrument map
-        instrument.observe((event: any) => {
+        instrument.observe((event) => {
           // Don't trigger callback for local changes
           if (event.transaction.origin === 'local') {return;}
 
           // Check if effectSend changed
           const changes = event.changes.keys;
           if (changes.has('effectSend')) {
-            const value = instrument.get('effectSend') ?? 0;
+            const value = (instrument.get('effectSend') as number) ?? 0;
             console.log(`Effect send change detected for ${instrumentId}: ${value}`);
             callback(instrumentId, value);
           }

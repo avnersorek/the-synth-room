@@ -4,11 +4,12 @@
 
 import * as Y from 'yjs';
 import { ObservableSync } from '../utils/ObservableSync';
+import { ConnectionStatus } from '../types';
 
 export class KitSyncManager extends ObservableSync<string> {
   private ydoc: Y.Doc;
 
-  constructor(ydoc: Y.Doc, kitMap: Y.Map<any>) {
+  constructor(ydoc: Y.Doc, kitMap: Y.Map<unknown>) {
     super(kitMap, 'name');
     this.ydoc = ydoc;
   }
@@ -17,7 +18,7 @@ export class KitSyncManager extends ObservableSync<string> {
    * Get current kit name
    */
   get(): string {
-    return this.map.get(this.key) || 'kit_a';
+    return this.map.get(this.key) as string || 'kit_a';
   }
 
   /**
@@ -33,7 +34,7 @@ export class KitSyncManager extends ObservableSync<string> {
   /**
    * Listen to kit changes from remote users
    */
-  onKitChange(callback: (kitName: string) => void, onConnectionChange?: (cb: any) => void): void {
+  onKitChange(callback: (kitName: string) => void, onConnectionChange?: (cb: (status: ConnectionStatus) => void) => void): void {
     this.onChange(callback, onConnectionChange);
   }
 }

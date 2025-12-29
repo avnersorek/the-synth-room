@@ -4,25 +4,25 @@
  */
 
 import { Sequencer } from '../sequencer';
-import { BASS_OSCILLATOR_TYPES, BASS_NOTES } from '../types';
+import { BASS_TYPES, BASS_NOTES } from '../types';
 import { AbstractGridInstrument } from './base/AbstractGridInstrument';
 import { renderCell, renderLabel } from './base/GridRenderer';
 
 export class BassInstrument extends AbstractGridInstrument {
-  private onOscillatorChange: (oscillatorType: string) => void;
+  private onBassTypeChange: (bassType: string) => void;
 
-  constructor(sequencer: Sequencer, onOscillatorChange: (oscillatorType: string) => void) {
+  constructor(sequencer: Sequencer, onBassTypeChange: (bassType: string) => void) {
     super(sequencer, 'bass');
-    this.onOscillatorChange = onOscillatorChange;
+    this.onBassTypeChange = onBassTypeChange;
   }
 
   render(): string {
     return `
       <div class="bass-instrument">
         <div class="bass-controls">
-          <label for="bass-oscillator-type">Oscillator:</label>
-          <select id="bass-oscillator-type">
-            ${BASS_OSCILLATOR_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
+          <label for="bass-type">Bass Type:</label>
+          <select id="bass-type">
+            ${BASS_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
           </select>
           ${this.renderVolumeControl()}
           ${this.renderEffectSendControl()}
@@ -55,16 +55,16 @@ export class BassInstrument extends AbstractGridInstrument {
   }
 
   protected attachAdditionalEvents(container: HTMLElement): void {
-    // Oscillator type selector change handler
-    const oscillatorSelect = container.querySelector('#bass-oscillator-type') as HTMLSelectElement;
-    if (oscillatorSelect) {
-      oscillatorSelect.addEventListener('change', () => {
-        this.onOscillatorChange(oscillatorSelect.value);
+    // Bass type selector change handler
+    const bassTypeSelect = container.querySelector('#bass-type') as HTMLSelectElement;
+    if (bassTypeSelect) {
+      bassTypeSelect.addEventListener('change', () => {
+        this.onBassTypeChange(bassTypeSelect.value);
       });
     }
   }
 
-  updateOscillatorSelector(container: HTMLElement, oscillatorType: string): void {
-    this.updateSelector(container, 'bass-oscillator-type', oscillatorType);
+  updateBassTypeSelector(container: HTMLElement, bassType: string): void {
+    this.updateSelector(container, 'bass-type', bassType);
   }
 }
