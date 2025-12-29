@@ -1,7 +1,8 @@
 import * as Tone from 'tone';
-import type { SynthType, BassType } from './types';
+import type { SynthType, Lead2SynthType, BassType } from './types';
 import { EffectsController } from './effects/EffectsController';
 import { LeadSynthFactory } from './synths/LeadSynthFactory';
+import { Lead2SynthFactory } from './synths/Lead2SynthFactory';
 import { BassSynthFactory } from './synths/BassSynthFactory';
 import { DrumSamplerFactory } from './synths/DrumSamplerFactory';
 
@@ -42,7 +43,7 @@ export class AudioEngine {
     this.samplers.set(name, sampler);
   }
 
-  createSynth(instrumentId: string, synthType: SynthType) {
+  createSynth(instrumentId: string, synthType: SynthType | Lead2SynthType) {
     // Dispose of existing synth if it exists
     const existingSynth = this.synths.get(instrumentId);
     if (existingSynth) {
@@ -51,8 +52,13 @@ export class AudioEngine {
 
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
 
-    // Create synth using factory
-    const synth = LeadSynthFactory.createSynth(synthType).connect(instrumentVolume);
+    // Create synth using appropriate factory based on instrument ID
+    let synth: Tone.PolySynth;
+    if (instrumentId === 'lead2') {
+      synth = Lead2SynthFactory.createSynth(synthType as Lead2SynthType).connect(instrumentVolume);
+    } else {
+      synth = LeadSynthFactory.createSynth(synthType as SynthType).connect(instrumentVolume);
+    }
 
     this.synths.set(instrumentId, synth);
     console.log(`Created ${synthType} preset for ${instrumentId}`);

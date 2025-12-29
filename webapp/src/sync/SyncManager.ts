@@ -11,6 +11,7 @@ import { GridSyncManager } from './managers/GridSyncManager';
 import { BpmSyncManager } from './managers/BpmSyncManager';
 import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
+import { Lead2SynthTypeSyncManager } from './managers/Lead2SynthTypeSyncManager';
 import { BassTypeSyncManager } from './managers/BassTypeSyncManager';
 import { VolumeSyncManager } from './managers/VolumeSyncManager';
 import { EffectsSyncManager } from './managers/EffectsSyncManager';
@@ -27,6 +28,7 @@ export class SyncManager {
   private bpmManager!: BpmSyncManager;
   private kitManager!: KitSyncManager;
   private synthTypeManager!: SynthTypeSyncManager;
+  private lead2SynthTypeManager!: Lead2SynthTypeSyncManager;
   private bassTypeManager!: BassTypeSyncManager;
   private volumeManager!: VolumeSyncManager;
   private effectsManager!: EffectsSyncManager;
@@ -111,6 +113,12 @@ export class SyncManager {
       synthType.set('type', 'Synth');
     }
 
+    // Initialize lead2 synth type map (for lead2 instrument)
+    const lead2SynthType = this.ydoc.getMap('lead2SynthType');
+    if (!lead2SynthType.has('type')) {
+      lead2SynthType.set('type', 'ElectricCello');
+    }
+
     // Initialize bass type map (for bass instrument)
     const bassType = this.ydoc.getMap('bassType');
     if (!bassType.has('type')) {
@@ -130,6 +138,7 @@ export class SyncManager {
     this.bpmManager = new BpmSyncManager(this.ydoc, this.ydoc.getMap('bpm'));
     this.kitManager = new KitSyncManager(this.ydoc, this.ydoc.getMap('kit'));
     this.synthTypeManager = new SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('synthType'));
+    this.lead2SynthTypeManager = new Lead2SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('lead2SynthType'));
     this.bassTypeManager = new BassTypeSyncManager(this.ydoc, this.ydoc.getMap('bassType'));
     this.volumeManager = new VolumeSyncManager(this.ydoc, this.instruments);
     this.effectsManager = new EffectsSyncManager(this.ydoc, this.instruments);
@@ -197,6 +206,19 @@ export class SyncManager {
 
   onSynthTypeChange(callback: (type: string) => void) {
     this.synthTypeManager.onSynthTypeChange(callback, (cb) => this.onConnectionChange(cb));
+  }
+
+  // Lead 2 synth type operations - delegate to Lead2SynthTypeSyncManager
+  getLead2SynthType(): string {
+    return this.lead2SynthTypeManager.get();
+  }
+
+  setLead2SynthType(type: string) {
+    this.lead2SynthTypeManager.set(type);
+  }
+
+  onLead2SynthTypeChange(callback: (type: string) => void) {
+    this.lead2SynthTypeManager.onLead2SynthTypeChange(callback, (cb) => this.onConnectionChange(cb));
   }
 
   // Bass type operations - delegate to BassTypeSyncManager

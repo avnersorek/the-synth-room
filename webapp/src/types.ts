@@ -25,11 +25,23 @@ export interface DrumParameters extends InstrumentParameters {
 }
 
 export type SynthType = 'Jump' | 'Polly' | 'Tiny';
+export type Lead2SynthType = 'ElectricCello';
 export type BassType = 'Guitar' | 'Bassy';
 
 export interface LeadParameters extends InstrumentParameters {
   volume: number;
   synthType?: SynthType;
+  attack?: number;
+  decay?: number;
+  sustain?: number;
+  release?: number;
+  cutoff?: number;
+  resonance?: number;
+}
+
+export interface Lead2Parameters extends InstrumentParameters {
+  volume: number;
+  synthType?: Lead2SynthType;
   attack?: number;
   decay?: number;
   sustain?: number;
@@ -72,6 +84,7 @@ export const BASS_NOTES = [
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
 export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly', 'Tiny'];
+export const LEAD2_SYNTH_TYPES: Lead2SynthType[] = ['ElectricCello'];
 export const BASS_TYPES: BassType[] = ['Guitar', 'Bassy'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
@@ -100,6 +113,24 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
       decay: 0.1,
       sustain: 0.7,
       release: 0.3,
+      cutoff: 2000,
+      resonance: 1,
+    }
+  },
+  lead2: {
+    id: 'lead2',
+    type: 'lead',
+    name: 'Lead 2',
+    samples: LEAD_NOTES.map(note => ({ name: note, path: '' })),
+    gridRows: 25,
+    gridCols: 16,
+    parameters: {
+      volume: 0.5,
+      synthType: 'ElectricCello',
+      attack: 0.2,
+      decay: 0.3,
+      sustain: 0.1,
+      release: 1.2,
       cutoff: 2000,
       resonance: 1,
     }

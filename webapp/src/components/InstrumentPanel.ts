@@ -24,10 +24,8 @@ export class InstrumentPanel {
     // Create GlowCard instances for each instrument
     instruments.forEach(instrument => {
       const isActive = instrument.id === activeId;
-      // Always show content for drums, lead1, and bass, show content for active instrument
-      const content = getInstrumentContent && (instrument.id === 'drums' || instrument.id === 'lead1' || instrument.id === 'bass' || isActive)
-        ? getInstrumentContent(instrument.id)
-        : '';
+      // Always show content
+      const content = getInstrumentContent && getInstrumentContent(instrument.id);
 
       const card = new GlowCard({
         instrumentId: instrument.id,
@@ -95,8 +93,8 @@ export class InstrumentPanel {
       const isActive = id === instrumentId;
       card.setActive(isActive);
 
-      // Always show content for drums, lead1, and bass, show content for active instrument
-      if (this.getInstrumentContent && (id === 'drums' || id === 'lead1' || id === 'bass' || isActive)) {
+      // Always show content for drums, lead1, lead2, and bass, show content for active instrument
+      if (this.getInstrumentContent && (id === 'drums' || id === 'lead1' || id === 'lead2' || id === 'bass' || isActive)) {
         card.updateContent(this.getInstrumentContent(id));
       } else {
         card.updateContent('');

@@ -45,6 +45,10 @@ export class Sequencer {
     const lead1Instrument = new Instrument(INSTRUMENTS.lead1, this.audio);
     this.instruments.set('lead1', lead1Instrument);
 
+    // Create lead2 instrument
+    const lead2Instrument = new Instrument(INSTRUMENTS.lead2, this.audio);
+    this.instruments.set('lead2', lead2Instrument);
+
     // Create bass instrument
     const bassInstrument = new Instrument(INSTRUMENTS.bass, this.audio);
     this.instruments.set('bass', bassInstrument);
@@ -67,15 +71,18 @@ export class Sequencer {
         // Reload state after sync completes
         const drumsGrid = this.sync!.getGrid('drums');
         const lead1Grid = this.sync!.getGrid('lead1');
+        const lead2Grid = this.sync!.getGrid('lead2');
         const bassGrid = this.sync!.getGrid('bass');
         this.bpm = this.sync!.getBpm();
 
         const drumsInstrument = this.instruments.get('drums');
         const lead1Instrument = this.instruments.get('lead1');
+        const lead2Instrument = this.instruments.get('lead2');
         const bassInstrument = this.instruments.get('bass');
 
         if (drumsInstrument) {drumsInstrument.setGrid(drumsGrid);}
         if (lead1Instrument) {lead1Instrument.setGrid(lead1Grid);}
+        if (lead2Instrument) {lead2Instrument.setGrid(lead2Grid);}
         if (bassInstrument) {bassInstrument.setGrid(bassGrid);}
 
         // Load volumes and effect sends from sync
@@ -93,15 +100,18 @@ export class Sequencer {
     // Load initial state from Yjs
     const drumsGrid = this.sync.getGrid('drums');
     const lead1Grid = this.sync.getGrid('lead1');
+    const lead2Grid = this.sync.getGrid('lead2');
     const bassGrid = this.sync.getGrid('bass');
     this.bpm = this.sync.getBpm();
 
     const drumsInstrument = this.instruments.get('drums');
     const lead1Instrument = this.instruments.get('lead1');
+    const lead2Instrument = this.instruments.get('lead2');
     const bassInstrument = this.instruments.get('bass');
 
     if (drumsInstrument) {drumsInstrument.setGrid(drumsGrid);}
     if (lead1Instrument) {lead1Instrument.setGrid(lead1Grid);}
+    if (lead2Instrument) {lead2Instrument.setGrid(lead2Grid);}
     if (bassInstrument) {bassInstrument.setGrid(bassGrid);}
 
     // Load volumes and effect sends from sync

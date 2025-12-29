@@ -7,7 +7,7 @@ import { Sequencer } from '../sequencer';
 import { UI } from '../ui/UI';
 import { SyncManager } from '../sync/SyncManager';
 import { ResourceLoader } from './ResourceLoader';
-import type { SynthType, BassType } from '../types';
+import type { SynthType, Lead2SynthType, BassType } from '../types';
 
 export class RoomInitializer {
   private resourceLoader: ResourceLoader;
@@ -45,6 +45,15 @@ export class RoomInitializer {
       await lead1Instrument.loadSamples();
     }
 
+    // Initialize lead2 synth with initial synth type from sync
+    const initialLead2SynthType = sync.getLead2SynthType();
+    const lead2Instrument = sequencer.getInstrument('lead2');
+    if (lead2Instrument) {
+      lead2Instrument.setParameter('synthType', initialLead2SynthType);
+      audio.createSynth('lead2', initialLead2SynthType as Lead2SynthType);
+      await lead2Instrument.loadSamples();
+    }
+
     // Initialize bass synth with initial bass type from sync
     const initialBassType = sync.getBassType();
     const bassInstrument = sequencer.getInstrument('bass');
@@ -74,6 +83,15 @@ export class RoomInitializer {
       this.resourceLoader.loadSynthType(sequencer, audio, synthType);
     };
 
+    // Handle lead2 synth type changes
+    const onLead2SynthChange = (synthType: string) => {
+      // Update sync if this is a local change
+      if (!this.resourceLoader.isLoadingLead2SynthType()) {
+        sync.setLead2SynthType(synthType);
+      }
+      this.resourceLoader.loadLead2SynthType(sequencer, audio, synthType);
+    };
+
     // Handle bass type changes
     const onBassTypeChange = (bassType: string) => {
       // Update sync if this is a local change
@@ -83,7 +101,7 @@ export class RoomInitializer {
       this.resourceLoader.loadBassType(sequencer, audio, bassType);
     };
 
-    const ui = new UI(sequencer, app, onKitChange, onSynthChange, onBassTypeChange);
+    const ui = new UI(sequencer, app, onKitChange, onSynthChange, onLead2SynthChange, onBassTypeChange);
 
     // Listen to remote kit changes
     sync.onKitChange(async (kitName) => {
@@ -117,6 +135,22 @@ export class RoomInitializer {
       }
     });
 
+    // Listen to remote lead2 synth type changes
+    sync.onLead2SynthTypeChange((type) => {
+      console.log(`RoomInitializer: Remote lead2 synth type change detected: "${type}"`);
+      this.resourceLoader.setLoadingLead2SynthType(true);
+      try {
+        this.resourceLoader.loadLead2SynthType(sequencer, audio, type);
+        // Update UI lead2 synth selector to reflect the change
+        ui.updateLead2SynthSelector(type);
+        console.log(`RoomInitializer: Lead2 synth type "${type}" loaded successfully`);
+      } catch (error) {
+        console.error(`RoomInitializer: Error loading lead2 synth type "${type}":`, error);
+      } finally {
+        this.resourceLoader.setLoadingLead2SynthType(false);
+      }
+    });
+
     // Listen to remote bass type changes
     sync.onBassTypeChange((type) => {
       console.log(`RoomInitializer: Remote bass type change detected: "${type}"`);
@@ -137,6 +171,7 @@ export class RoomInitializer {
 
     // Update selectors to reflect initial state from sync
     ui.updateSynthSelector(initialSynthType);
+    ui.updateLead2SynthSelector(initialLead2SynthType);
     ui.updateBassTypeSelector(initialBassType);
   }
 }

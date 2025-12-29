@@ -5,11 +5,12 @@
 
 import { Sequencer } from '../sequencer';
 import { AudioEngine } from '../audio';
-import type { SynthType, BassType } from '../types';
+import type { SynthType, Lead2SynthType, BassType } from '../types';
 
 export class ResourceLoader {
   private isLoadingKitFromSync = false;
   private isLoadingSynthTypeFromSync = false;
+  private isLoadingLead2SynthTypeFromSync = false;
   private isLoadingBassTypeFromSync = false;
 
   /**
@@ -42,6 +43,17 @@ export class ResourceLoader {
   }
 
   /**
+   * Load a synth type for the lead2 instrument
+   */
+  loadLead2SynthType(sequencer: Sequencer, audio: AudioEngine, synthType: string): void {
+    const lead2 = sequencer.getInstrument('lead2');
+    if (lead2) {
+      lead2.setParameter('synthType', synthType);
+      audio.createSynth('lead2', synthType as Lead2SynthType);
+    }
+  }
+
+  /**
    * Load a bass type for the bass instrument
    */
   loadBassType(sequencer: Sequencer, audio: AudioEngine, bassType: string): void {
@@ -67,6 +79,13 @@ export class ResourceLoader {
   }
 
   /**
+   * Check if currently loading lead2 synth type from sync
+   */
+  isLoadingLead2SynthType(): boolean {
+    return this.isLoadingLead2SynthTypeFromSync;
+  }
+
+  /**
    * Check if currently loading bass type from sync
    */
   isLoadingBassType(): boolean {
@@ -85,6 +104,13 @@ export class ResourceLoader {
    */
   setLoadingSynthType(loading: boolean): void {
     this.isLoadingSynthTypeFromSync = loading;
+  }
+
+  /**
+   * Set loading lead2 synth type flag
+   */
+  setLoadingLead2SynthType(loading: boolean): void {
+    this.isLoadingLead2SynthTypeFromSync = loading;
   }
 
   /**

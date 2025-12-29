@@ -4,16 +4,22 @@
  */
 
 import { Sequencer } from '../sequencer';
-import { SYNTH_TYPES, LEAD_NOTES } from '../types';
+import { SYNTH_TYPES, LEAD2_SYNTH_TYPES, LEAD_NOTES } from '../types';
 import { AbstractGridInstrument } from './base/AbstractGridInstrument';
 import { renderCell, renderLabel } from './base/GridRenderer';
 
 export class LeadInstrument extends AbstractGridInstrument {
   private onSynthChange: (synthType: string) => void;
+  private synthTypes: readonly string[];
 
-  constructor(sequencer: Sequencer, onSynthChange: (synthType: string) => void) {
-    super(sequencer, 'lead1');
+  constructor(
+    sequencer: Sequencer,
+    onSynthChange: (synthType: string) => void,
+    instrumentId: 'lead1' | 'lead2' = 'lead1'
+  ) {
+    super(sequencer, instrumentId);
     this.onSynthChange = onSynthChange;
+    this.synthTypes = instrumentId === 'lead1' ? SYNTH_TYPES : LEAD2_SYNTH_TYPES;
   }
 
   render(): string {
@@ -22,7 +28,7 @@ export class LeadInstrument extends AbstractGridInstrument {
         <div class="lead-controls">
           <label for="synth-type">Synth:</label>
           <select id="synth-type">
-            ${SYNTH_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
+            ${this.synthTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
           </select>
           ${this.renderVolumeControl()}
           ${this.renderEffectSendControl()}
