@@ -1,4 +1,4 @@
 {
   "name": "the-synth-room",
-  "main": "party/index.ts"
+  "main": "index.ts"
 }

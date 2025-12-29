@@ -13,30 +13,46 @@ The Synth Room is a collaborative, real-time music creation web application. Mul
 
 ## Project Structure
 
-```
-src/
-├── main.ts                  # Application entry point
-├── types.ts                 # Global type definitions
-├── audio.ts                 # AudioEngine class
-├── sequencer.ts             # Sequencer playback engine
-├── instrument.ts            # Instrument grid state
-├── lobby.ts                 # Room browser
-├── init/                    # App initialization logic
-├── components/              # UI components (instruments, panels)
-│   └── base/                # Abstract base classes
-├── ui/                      # UI orchestration and event handling
-│   ├── UI.ts                # Main UI controller
-│   ├── managers/            # Event, sync UI, animation managers
-│   └── utils/               # UI utilities
-├── sync/                    # Real-time synchronization
-│   ├── SyncManager.ts       # Main sync orchestrator
-│   ├── managers/            # Domain-specific sync managers
-│   └── utils/               # Sync utilities and migration
-├── effects/                 # Audio effects
-└── utils/                   # Configuration and helpers
+This is a monorepo with two main packages:
 
-party/
-└── index.ts                 # PartyKit server (WebSocket + Yjs)
+```
+the-synth-room/
+├── webapp/                  # Frontend Vite application
+│   ├── src/
+│   │   ├── main.ts          # Application entry point
+│   │   ├── types.ts         # Global type definitions
+│   │   ├── audio.ts         # AudioEngine class
+│   │   ├── sequencer.ts     # Sequencer playback engine
+│   │   ├── instrument.ts    # Instrument grid state
+│   │   ├── lobby.ts         # Room browser
+│   │   ├── init/            # App initialization logic
+│   │   ├── components/      # UI components (instruments, panels)
+│   │   │   └── base/        # Abstract base classes
+│   │   ├── ui/              # UI orchestration and event handling
+│   │   │   ├── UI.ts        # Main UI controller
+│   │   │   ├── managers/    # Event, sync UI, animation managers
+│   │   │   └── utils/       # UI utilities
+│   │   ├── sync/            # Real-time synchronization
+│   │   │   ├── SyncManager.ts     # Main sync orchestrator
+│   │   │   ├── managers/    # Domain-specific sync managers
+│   │   │   └── utils/       # Sync utilities and migration
+│   │   ├── synths/          # Synth and sampler factories
+│   │   ├── effects/         # Audio effects
+│   │   └── utils/           # Configuration and helpers
+│   ├── package.json         # Frontend dependencies & scripts
+│   ├── vite.config.ts       # Vite configuration
+│   └── tsconfig.json        # TypeScript config for webapp
+│
+├── party/                   # PartyKit server (WebSocket + Yjs)
+│   ├── index.ts             # Main server entry point
+│   ├── synthRoom.ts         # Synth room handler
+│   ├── roomsMetadataRoom.ts # Room metadata handler
+│   ├── package.json         # Server dependencies & scripts
+│   └── tsconfig.json        # TypeScript config for server
+│
+├── docs/                    # Shared documentation
+├── Taskfile.yml             # Monorepo task runner
+└── partykit.json            # PartyKit configuration
 ```
 
 ## Key Features
@@ -110,17 +126,29 @@ Always validate dimensions when setting grid state.
 
 **Local Development:**
 ```bash
-npm run dev:server    # Start PartyKit server (localhost:1999)
-npm run dev           # Start Vite dev server (localhost:5173)
+# Option 1: Run from individual packages
+cd party && npm run dev      # Start PartyKit server (localhost:1999)
+cd webapp && npm run dev     # Start Vite dev server (localhost:5173)
+
+# Option 2: Use Taskfile (recommended for running both)
+task run-local               # Launches both servers in Zellij layout
 ```
 
 **Testing Collaboration:**
 Open multiple browser tabs/windows with the same room URL to test sync.
 
-**Deployment:**
+**Running CI Checks:**
 ```bash
-npm run build         # Build frontend
-npm run deploy-party  # Deploy PartyKit server
+task ci:party         # Run lint & type-check for party
+task ci:webapp        # Run lint & type-check for webapp
+task ci               # Run all CI checks (both packages)
+```
+
+**Deployment:**
+- Webapp is deployed to Cloudflair workers in push to main, using wrangler.
+- Partykit
+```bash
+cd party && npm run deploy          # Deploy PartyKit server
 ```
 
 ## Technical Documentation
@@ -148,4 +176,21 @@ For detailed technical information, see the docs folder:
 - Update types.ts for any new configuration or interfaces
 - Document complex logic with inline comments
 - Update relevant docs/ files for architectural changes
-- ALWAYS run `npm run lint` & `npm run type-check` frequently and correct ALL issues.
+- ALWAYS run linting and type-checking frequently and correct ALL issues:
+  ```bash
+  # Check individual packages
+  cd webapp && npm run lint && npm run type-check
+  cd party && npm run lint && npm run type-check
+
+  # Or use Taskfile to check everything
+  task ci
+  ```
+
+## Monorepo Notes
+
+- Each package (webapp, party) has its own dependencies and build configuration
+- Both packages share the same TypeScript and ESLint versions for consistency
+- The webapp package includes all frontend dependencies (Vite, Tone.js)
+- The party package includes only server dependencies (PartyKit, Yjs)
+- Shared documentation lives in the root `docs/` folder
+- Use the Taskfile for cross-package operations

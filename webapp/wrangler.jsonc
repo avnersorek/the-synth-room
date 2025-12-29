@@ -3,6 +3,6 @@
     "name": "the-synth-room",
     "compatibility_date": "2025-12-15",
     "assets": {
-        "directory": "./webapp/dist"
+        "directory": "./dist"
     }
 }
