@@ -25,7 +25,7 @@ export interface DrumParameters extends InstrumentParameters {
 }
 
 export type SynthType = 'Jump' | 'Polly' | 'Tiny';
-export type Lead2SynthType = 'ElectricCello';
+export type Lead2SynthType = 'ElectricCello' | 'Kalimba' | 'ThinSaws';
 export type BassType = 'Guitar' | 'Bassy';
 
 export interface LeadParameters extends InstrumentParameters {
@@ -84,7 +84,7 @@ export const BASS_NOTES = [
 export const KITS = ['kit_a', 'kit_b', 'kit_c'];
 
 export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly', 'Tiny'];
-export const LEAD2_SYNTH_TYPES: Lead2SynthType[] = ['ElectricCello'];
+export const LEAD2_SYNTH_TYPES: Lead2SynthType[] = ['ElectricCello', 'Kalimba', 'ThinSaws'];
 export const BASS_TYPES: BassType[] = ['Guitar', 'Bassy'];
 
 export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
