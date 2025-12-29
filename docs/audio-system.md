@@ -21,9 +21,13 @@ Location: [src/audio.ts](../src/audio.ts)
 ┌─────────────┐
 │ Drum Sampler│───┐
 └─────────────┘   │
+                  │
+┌─────────────┐   │
+│ Lead 1 Synth│───┤
+└─────────────┘   │
                   ├──→ Instrument Volume ──┬──→ Effect Send ──→ PingPongDelay ─┐
 ┌─────────────┐   │                        │                                    │
-│ Lead Synth  │───┤                        └──→ Master Volume ─────────────────┼──→ Output
+│ Lead 2 Synth│───┤                        └──→ Master Volume ─────────────────┼──→ Output
 └─────────────┘   │                                                             │
                   │                                                             │
 ┌─────────────┐   │                                                             │
@@ -55,37 +59,61 @@ setKit(kitId: string): Promise<void>
 ```
 Loads new sample set for all 8 voices. Uses Promise to handle async loading.
 
-### Lead Synth
+### Lead 1 Synth
 
-**Implementation:** Tone.PolySynth wrapping Tone.Synth, Tone.FMSynth, or Tone.AMSynth
+**Implementation:** Tone.PolySynth with preset-based architecture
 - Polyphonic (multiple notes simultaneously)
 - 25-note range: C2 to C4 (chromatic)
-- 3 synth types: "Synth" (basic), "FMSynth" (frequency modulation), "AMSynth" (amplitude modulation)
+- 3 named presets with different synthesis approaches:
+  - Various oscillator types (fatsawtooth, harmonic partials)
+  - Includes both basic synth and AM synthesis options
+  - Each with distinct timbral characteristics
+- Each preset has custom envelope and filter settings
 - ADSR envelope for volume shaping
-- Filter controls: cutoff frequency, resonance
 
 **Note Duration:**
 Calculated based on consecutive active cells in the grid. See [Sequencer](sequencer.md) for details.
 
-**Synth Type Switching:**
+**Preset Switching:**
 ```typescript
-setLeadSynthType(type: LeadSynthType): void
+setLeadSynthType(type: string): void
 ```
-Disposes old PolySynth and creates new one with specified synth type.
+Disposes old PolySynth and creates new one with specified preset configuration.
+
+### Lead 2 Synth
+
+**Implementation:** Tone.PolySynth wrapping Tone.FMSynth with preset-based architecture
+- Polyphonic (multiple notes simultaneously)
+- 25-note range: C2 to C4 (chromatic)
+- 3 FM synthesis presets with varying modulation characteristics
+- Each preset uses different modulation indices for distinct timbres
+- ADSR envelopes for both carrier and modulator
+
+**Note Duration:**
+Calculated based on consecutive active cells in the grid. See [Sequencer](sequencer.md) for details.
+
+**Preset Switching:**
+```typescript
+setLead2SynthType(type: string): void
+```
+Disposes old PolySynth and creates new one with specified FM preset configuration.
 
 ### Bass Synth
 
-**Implementation:** Tone.MonoSynth
+**Implementation:** Tone.MonoSynth with preset-based architecture
 - Monophonic (one note at a time)
 - 25-note range: C1 to C3 (chromatic)
-- 3 oscillator types: "square", "square8", "sine"
+- 2 named presets with different synthesis approaches:
+  - FM synthesis with complex modulation
+  - Harmonic synthesis using custom partials
+- Each preset has custom envelope, filter, and modulation settings
 - ADSR envelope for volume shaping
 
-**Oscillator Type Switching:**
+**Preset Switching:**
 ```typescript
-setBassOscillatorType(type: OscillatorType): void
+setBassType(type: string): void
 ```
-Updates oscillator.type parameter without recreating synth.
+Disposes old MonoSynth and creates new one with specified preset configuration.
 
 ## Effects
 
@@ -94,8 +122,8 @@ Updates oscillator.type parameter without recreating synth.
 **Implementation:** EffectsController class ([src/effects/EffectsController.ts](../src/effects/EffectsController.ts))
 
 **Parameters:**
-- Delay time: 0.25 seconds (quarter note at 120 BPM)
-- Feedback: 0.3 (number of repeats)
+- Delay time: "3n" (dotted eighth note, adapts to current BPM)
+- Feedback: 0.2 (number of repeats)
 - Ping-pong stereo spread
 - Per-instrument send amount (0.0 to 1.0)
 
@@ -192,8 +220,9 @@ Asynchronous - samples loaded via Tone.Sampler with URL map. Loading happens bef
 **AudioEngine Main Methods:**
 - `start()`: Start Tone.Transport and enable playback
 - `setKit(kitId)`: Load new drum kit samples
-- `setLeadSynthType(type)`: Change lead synthesizer type
-- `setBassOscillatorType(type)`: Change bass oscillator waveform
+- `setLeadSynthType(type)`: Change Lead 1 synthesizer preset
+- `setLead2SynthType(type)`: Change Lead 2 synthesizer preset
+- `setBassType(type)`: Change bass synthesizer preset
 - `setInstrumentVolume(id, volume)`: Set instrument level
 - `setMasterVolume(volume)`: Set master output level
 - `setEffectSend(id, amount)`: Set effect send amount (0-1)

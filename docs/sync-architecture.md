@@ -89,12 +89,18 @@ Location: [src/sync/SyncManager.ts](../src/sync/SyncManager.ts)
 - Clean up on disconnect
 
 **Domain-Specific Managers:**
-- GridSyncManager: Instrument grid states
-- BpmSyncManager: Tempo/BPM
+- GridSyncManager: Instrument grid states (drums, lead1, lead2, bass)
+- BpmSyncManager: Tempo/BPM (40-240)
 - KitSyncManager: Drum kit selection
-- SynthTypeSyncManager: Lead synth type
-- VolumeSyncManager: All volume controls
-- EffectsSyncManager: Effect send amounts
+- SynthTypeSyncManager: Lead 1 synth preset type
+- Lead2SynthTypeSyncManager: Lead 2 synth preset type
+- BassTypeSyncManager: Bass synth preset type
+- VolumeSyncManager: Per-instrument volume controls (0.0-1.0)
+- EffectsSyncManager: Per-instrument effect send amounts (0.0-1.0)
+
+**Base Classes:**
+- InstrumentTypeSyncManager: Abstract base class for type sync managers
+- ObservableSync: Utility base class providing onChange pattern for simple value managers
 
 ## Data Structure in Yjs
 
@@ -105,23 +111,29 @@ const sharedState = yDoc.getMap('synth-room');
 
 sharedState structure:
 {
-  grids: Y.Map<InstrumentId, Y.Array<Y.Array<boolean>>>
-  bpm: number
-  kit: string
-  leadSynthType: string
-  volumes: Y.Map<InstrumentId, number>
-  effectSends: Y.Map<InstrumentId, number>
+  instruments: Y.Map<InstrumentId, {
+    grid: Y.Array<Y.Array<number>>,      // 0 = inactive, 1 = active
+    volume: number,                       // 0.0 to 1.0
+    effectSend: number                    // 0.0 to 1.0
+  }>
+  bpm: Y.Map { value: number }            // 40-240
+  kit: Y.Map { name: string }             // kit identifier
+  synthType: Y.Map { type: string }       // Lead 1 synth type
+  lead2SynthType: Y.Map { type: string }  // Lead 2 synth type
+  bassType: Y.Map { type: string }        // Bass synth type
 }
 ```
 
 **Grid Structure:**
 ```typescript
-grids.get('drums') → Y.Array[
-  Y.Array[false, true, false, ...],  // Row 0
-  Y.Array[false, false, true, ...],  // Row 1
+instruments.get('drums').grid → Y.Array[
+  Y.Array[0, 1, 0, ...],  // Row 0 (0=inactive, 1=active)
+  Y.Array[0, 0, 1, ...],  // Row 1
   ...
 ]
 ```
+
+**Note:** Grids use numbers (0/1) instead of booleans for Yjs compatibility. Values are converted to booleans when read by the application.
 
 ## Sync Flow: User Action
 
@@ -188,26 +200,61 @@ Location: [src/sync/managers/BpmSyncManager.ts](../src/sync/managers/BpmSyncMana
 
 **Debouncing:** Uses throttling to prevent excessive updates during slider drag.
 
-### KitSyncManager & SynthTypeSyncManager
+### KitSyncManager
 
-**Manages:** Drum kit selection and lead synth type
+Location: [src/sync/managers/KitSyncManager.ts](../src/sync/managers/KitSyncManager.ts)
 
-**Data Structure:** String values in shared Y.Map
+**Manages:** Drum kit selection
 
-**Special Handling:** Async loading of samples/synths on remote clients
+**Data Structure:** Y.Map with 'name' key containing string value
+
+**Special Handling:** Async loading of samples on remote clients
+
+### SynthTypeSyncManager
+
+Location: [src/sync/managers/SynthTypeSyncManager.ts](../src/sync/managers/SynthTypeSyncManager.ts)
+
+**Manages:** Lead 1 synth preset selection
+
+**Data Structure:** Y.Map with 'type' key containing string value
+
+**Presets:** 3 available preset types
+
+### Lead2SynthTypeSyncManager
+
+Location: [src/sync/managers/Lead2SynthTypeSyncManager.ts](../src/sync/managers/Lead2SynthTypeSyncManager.ts)
+
+**Manages:** Lead 2 synth preset selection
+
+**Data Structure:** Y.Map with 'type' key containing string value
+
+**Presets:** 3 FM synthesis preset types
+
+### BassTypeSyncManager
+
+Location: [src/sync/managers/BassTypeSyncManager.ts](../src/sync/managers/BassTypeSyncManager.ts)
+
+**Manages:** Bass synth preset selection
+
+**Data Structure:** Y.Map with 'type' key containing string value
+
+**Presets:** 2 available preset types
 
 ### VolumeSyncManager
 
 Location: [src/sync/managers/VolumeSyncManager.ts](../src/sync/managers/VolumeSyncManager.ts)
 
-**Manages:** Per-instrument and master volumes
+**Manages:** Per-instrument volume controls
 
 **Data Structure:**
+Stored within each instrument's Y.Map in the `instruments` collection:
 ```typescript
-volumes: Y.Map<InstrumentId | 'master', number>
+instruments.get(instrumentId).volume: number
 ```
 
-**Range:** -50 dB to 0 dB (Tone.js volume units)
+**Range:** 0.0 (silent) to 1.0 (full volume)
+
+**Note:** Application converts between 0.0-1.0 range and decibels (-∞ dB to 0 dB) using Tone.js utilities
 
 ### EffectsSyncManager
 
@@ -216,8 +263,9 @@ Location: [src/sync/managers/EffectsSyncManager.ts](../src/sync/managers/Effects
 **Manages:** Effect send amounts for each instrument
 
 **Data Structure:**
+Stored within each instrument's Y.Map in the `instruments` collection:
 ```typescript
-effectSends: Y.Map<InstrumentId, number>
+instruments.get(instrumentId).effectSend: number
 ```
 
 **Range:** 0.0 (no effect) to 1.0 (full effect)

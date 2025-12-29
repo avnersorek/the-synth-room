@@ -18,13 +18,16 @@ Location: [src/sequencer.ts](../src/sequencer.ts)
 
 **Dependencies:**
 - AudioEngine: Audio playback and synthesis
-- Instrument instances: Grid state (drums, lead, bass)
+- Instrument instances: Grid state (drums, lead1, lead2, bass)
 - Tone.Transport: Scheduling clock
 
 **Key State:**
-- `isPlaying`: Boolean playback status
+- `loopId`: Tone.Transport loop ID (null when stopped, number when playing)
 - `currentStep`: Current position in 16-step sequence (0-15)
-- `onStepChange`: Callback for UI updates
+- `onStepCallbacks`: Array of callbacks for UI updates
+
+**Key Methods:**
+- `isPlaying()`: Computed method returning boolean (checks loopId and Transport state)
 
 ## Playback Flow
 
@@ -41,7 +44,8 @@ For each instrument:
     instrument.playStep(currentStep, time)
         ↓
         Drums: Trigger samples for active cells
-        Lead: Trigger notes with calculated duration
+        Lead 1: Trigger notes with calculated duration
+        Lead 2: Trigger notes with calculated duration
         Bass: Trigger notes with calculated duration
     ↓
 Increment currentStep (mod 16)
@@ -79,40 +83,49 @@ Tone.Transport.scheduleRepeat((time) => {
 
 **Problem:** Grid cells are on/off states, but synths need note duration.
 
-**Solution:** Scan ahead to find consecutive active cells.
+**Solution:** Embedded in the `playStep()` method in [src/instrument.ts:98-113](../src/instrument.ts#L98-L113).
 
 **Algorithm:**
-```typescript
-calculateNoteDuration(row: number, col: number): number {
-  let duration = 1;  // Start with one 16th note
-  let nextCol = (col + 1) % 16;
+The duration calculation is performed inline during playback and only triggers notes at the start of a span:
 
-  // Count consecutive active cells
-  while (this.grid[row][nextCol] && nextCol !== col) {
-    duration++;
-    nextCol = (nextCol + 1) % 16;
+```typescript
+// Check if this is the start of a note span
+const isStartOfSpan = step === 0 || !this.state.grid[row][step - 1];
+
+if (isStartOfSpan) {
+  let spanLength = 1;
+  // Count consecutive active cells forward from current position
+  for (let i = step + 1; i < this.config.gridCols; i++) {
+    if (this.state.grid[row][i]) {
+      spanLength++;
+    } else {
+      break;  // Stop at first inactive cell
+    }
   }
 
-  return duration;  // Number of 16th notes
+  // Convert to Tone.js time notation (bars:quarters:sixteenths)
+  const duration = `0:0:${spanLength}`;
+  sampler.triggerAttackRelease(note, duration, time);
 }
 ```
+
+**Key Differences from Simple Approach:**
+1. **Span Detection**: Only triggers on the first cell of a span (prevents re-triggering)
+2. **Forward-Only**: Doesn't wrap around grid (stops at boundary)
+3. **Time Notation**: Uses Tone.js time format `"0:0:N"` (bars:quarters:sixteenths)
 
 **Example:**
 ```
 Grid:  X X X . . . . .
        ↑ ↑ ↑
 Step:  0 1 2
-Duration = 3 (3 × 16th notes = dotted 8th note)
+
+At step 0: isStartOfSpan = true, spanLength = 3, duration = "0:0:3"
+At step 1: isStartOfSpan = false (previous cell active), no trigger
+At step 2: isStartOfSpan = false, no trigger
 ```
 
-**Conversion to Tone.js Duration:**
-```typescript
-const toneNotation = `${duration * 16}n`;  // e.g., "48n" for 3 × 16n
-```
-
-See implementations:
-- Lead: [src/components/LeadInstrument.ts:95](../src/components/LeadInstrument.ts#L95)
-- Bass: [src/components/BassInstrument.ts:90](../src/components/BassInstrument.ts#L90)
+This approach ensures each note is triggered only once with the correct duration, preventing overlapping triggers.
 
 ## Drums vs. Synths Playback
 
@@ -193,15 +206,16 @@ toggle(instrumentId: InstrumentId, row: number, col: number): void {
 
 **play():**
 - Starts Tone.Transport if not already started
-- Sets isPlaying = true
+- Creates a scheduleRepeat loop and stores its ID in loopId
+- isPlaying() now returns true
 - UI reflects playback state
 
 **stop():**
-- Does NOT stop Tone.Transport (continues scheduling)
-- Sets isPlaying = false
+- Stops and clears the scheduled loop (sets loopId = null)
 - Resets currentStep to 0
+- Calls transport.stop() to halt the Transport
 - UI stops visual animation
-- **Note:** Audio thread continues for background playback readiness
+- **Note:** Transport can be restarted when play() is called again
 
 **destroy():**
 - Stops Transport

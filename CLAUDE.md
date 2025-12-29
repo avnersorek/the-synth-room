@@ -57,18 +57,21 @@ the-synth-room/
 
 ## Key Features
 
-### Insturments
-- Instruments have grids and settings that are synced across the room.
-- All instruments have a volume setting.
-- Each Instrument type will have it's own settings, sounds, effects, and UI.
-- The user scrolls through the instruments and works on one at each time.
-- All instruments parts are played together when the app is playing.
+### Instruments
+- Four instruments: **Drums**, **Lead 1**, **Lead 2**, and **Bass**
+- Instruments have grids and settings that are synced across the room
+- All instruments have a volume setting and effect send control
+- Each instrument type has its own settings, sounds, effects, and UI
+- The user scrolls through the instruments and works on one at a time
+- All instrument parts are played together when the app is playing
+- Instruments use preset-based architecture with named sound configurations
 
 ### Real-time Collaboration
 - Grid state, BPM, kit/synth selection, volumes, and effects synced via Yjs
 - Conflict-free updates using CRDTs
 - Room-based sessions with lobby browser
-- Some things are not synced, mainly Play/stop status - users listen individually and edit together.
+- Some things are not synced, mainly Play/stop status - users listen individually and edit together
+- Four instruments synced: drums (sampler), lead1 (polyphonic synth), lead2 (FM synth), bass (mono synth)
 
 **Audio Processing:**
 - Tone.js Transport for precise scheduling and varied sound generation.
