@@ -249,16 +249,18 @@ export class Sequencer {
         instrument.playStep(this.currentStep, time);
       });
 
-      // Update step counter immediately (works even when tab is not focused)
-      const nextStep = (this.currentStep + 1) % 16;
-      this.currentStep = nextStep;
+      // Capture current step before incrementing (needed because requestAnimationFrame is async)
+      const stepToDisplay = this.currentStep;
 
-      // Notify all listeners of the step change using requestAnimationFrame
+      // Notify listeners of current step using requestAnimationFrame
       // This ensures visual updates sync with browser paint when tab is visible
       // When tab is not visible, this will queue but the audio continues playing
       requestAnimationFrame(() => {
-        this.onStepCallbacks.forEach(callback => callback(nextStep));
+        this.onStepCallbacks.forEach(callback => callback(stepToDisplay));
       });
+
+      // Update step counter after scheduling UI update (works even when tab is not focused)
+      this.currentStep = (this.currentStep + 1) % 16;
     }, '16n');
 
     transport.start();
