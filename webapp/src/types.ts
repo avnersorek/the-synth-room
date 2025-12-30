@@ -81,7 +81,7 @@ export const BASS_NOTES = [
   'C3'
 ];
 
-export const KITS = ['kit_a', 'kit_b', 'kit_c', 'kit_cr78'];
+export const KITS = ['kit_a', 'kit_b', 'kit_c', 'kit_cr78', 'kit_real', 'kit_80s', 'kit_lofi'];
 
 export const SYNTH_TYPES: SynthType[] = ['Jump', 'Polly', 'Tiny'];
 export const LEAD2_SYNTH_TYPES: Lead2SynthType[] = ['ElectricCello', 'Kalimba', 'ThinSaws'];
