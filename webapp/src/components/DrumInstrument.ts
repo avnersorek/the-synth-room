@@ -11,6 +11,16 @@ import { renderCell, renderLabel } from './base/GridRenderer';
 export class DrumInstrument extends AbstractGridInstrument {
   private onKitChange: (kit: string) => Promise<void>;
 
+  private static getKitDisplayName(kitId: string): string {
+    const nameMap: { [key: string]: string } = {
+      'kit_cr78': 'CR-78',
+      'kit_real': 'Real',
+      'kit_80s': '80s',
+      'kit_lofi': 'Lo-Fi'
+    };
+    return nameMap[kitId] || kitId;
+  }
+
   constructor(sequencer: Sequencer, onKitChange: (kit: string) => Promise<void>) {
     super(sequencer, 'drums');
     this.onKitChange = onKitChange;
@@ -22,7 +32,7 @@ export class DrumInstrument extends AbstractGridInstrument {
         <div class="drum-controls">
           <label for="kit">Kit:</label>
           <select id="kit">
-            ${KITS.map(kit => `<option value="${kit}">${kit}</option>`).join('')}
+            ${KITS.map(kit => `<option value="${kit}">${DrumInstrument.getKitDisplayName(kit)}</option>`).join('')}
           </select>
           ${this.renderVolumeControl()}
           ${this.renderEffectSendControl()}
