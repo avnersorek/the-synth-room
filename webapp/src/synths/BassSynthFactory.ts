@@ -15,6 +15,8 @@ export class BassSynthFactory {
         return this.createGuitarSynth();
       case 'Bassy':
         return this.createBassySynth();
+      case 'Lectric':
+        return this.createLectricSynth();
       default:
         // Default to Guitar preset
         return this.createGuitarSynth();
@@ -83,6 +85,25 @@ export class BassSynthFactory {
         release: 1.5,
         baseFrequency: 50,
         octaves: 3.4
+      }
+    });
+  }
+
+  /**
+   * Lectric preset: Punchy electric bass with sawtooth waveform
+   * Fast attack and release for percussive, plucky characteristics with portamento
+   */
+  private static createLectricSynth(): Tone.MonoSynth {
+    return new Tone.MonoSynth({
+      portamento: 0.2,
+      oscillator: {
+        type: "sawtooth"
+      },
+      envelope: {
+        attack: 0.03,
+        decay: 0.1,
+        sustain: 0.2,
+        release: 0.02
       }
     });
   }
