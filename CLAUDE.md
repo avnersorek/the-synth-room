@@ -11,6 +11,13 @@ The Synth Room is a collaborative, real-time music creation web application. Mul
 - PartyKit (WebSocket server for real-time collaboration)
 - Vanilla JavaScript/TypeScript (no frontend framework)
 
+## Important things
+- Follow existing code patterns and structure
+- Keep files focused and under 300 lines when possible
+- ALWAYS run linting and type-checking frequently and correct issues
+- Never add unused code
+- Check for duplicated code that can be reused
+
 ## Project Structure
 
 This is a monorepo with two main packages:
@@ -76,10 +83,6 @@ the-synth-room/
 **Audio Processing:**
 - Tone.js Transport for precise scheduling and varied sound generation.
 - Background playback (works when tab unfocused)
-
-## Coding Style and Patterns
-
-
 
 ### Architecture Patterns
 

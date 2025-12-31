@@ -1,3 +1,5 @@
+import { generateRoomName } from './utils/roomNameGenerator';
+
 export interface Room {
   roomId: string;
   connectionCount: number;
@@ -48,7 +50,7 @@ export class Lobby {
     const createButton = this.container.querySelector('#create-room');
     if (createButton) {
       createButton.addEventListener('click', () => {
-        const roomId = Math.random().toString(36).substring(2, 10);
+        const roomId = generateRoomName();
         window.location.href = `${window.location.pathname}?room=${roomId}`;
       });
     }
@@ -109,7 +111,7 @@ export class Lobby {
         (room) => `
         <div class="room-card" data-room-id="${room.roomId}">
           <div class="room-header">
-            <h3 class="room-id">Room: ${room.roomId}</h3>
+            <h3 class="room-id">${room.roomId}</h3>
             <span class="user-count">${room.connectionCount} ${room.connectionCount === 1 ? 'user' : 'users'}</span>
           </div>
           <div class="room-footer">

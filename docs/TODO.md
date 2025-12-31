@@ -1,10 +1,6 @@
 # fix
 - strange card background behind drums
-- the lobby icon is disguisting 
-
-# features
-- better room names
-- sort out drum kits cause there are some bad samples 
+- space bar is not working well and there is a lot "selecting text" when playing with the platform
 
 # code
 - remove unused code
