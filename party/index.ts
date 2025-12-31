@@ -13,7 +13,8 @@ export default class SynthRoomServer implements Party.Server {
     }
 
     private getEnv(key: string, fallback: string) {
-        return this.room.env[key] ? String(this.room.env[key]) : fallback;
+        const value = this.room.env[key];
+        return typeof value === 'string' ? value : fallback;
     }
 
     private callRoom = (roomId: string, init: RequestInit) =>
@@ -32,7 +33,7 @@ export default class SynthRoomServer implements Party.Server {
         },
     });
 
-    async onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
+    async onConnect(conn: Party.Connection, _ctx: Party.ConnectionContext) {
         // y-partykit handles all Yjs protocol communication
         return onConnect(conn, this.room, {
             persist: true,
@@ -60,7 +61,7 @@ export default class SynthRoomServer implements Party.Server {
                 // WE ARE IN THE ROOMS METADATA ROOM
                 if (request.method === "POST") {
                     const payload: RoomMetadata = await request.json();
-                    this.room.storage.put(payload.roomId, payload);
+                    await this.room.storage.put(payload.roomId, payload);
                     return this.createResponse({});
                 } else if (request.method === "GET") {
                     return await this.getRoomsList();
