@@ -43,7 +43,9 @@ export class Lobby {
     const refreshButton = this.container.querySelector('#refresh-rooms');
     if (refreshButton) {
       refreshButton.addEventListener('click', () => {
-        this.loadRooms();
+        void this.loadRooms().catch((error) => {
+          console.error('Failed to load rooms:', error);
+        });
       });
     }
   }

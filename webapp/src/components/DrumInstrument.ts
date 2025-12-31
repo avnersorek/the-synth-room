@@ -64,7 +64,9 @@ export class DrumInstrument extends AbstractGridInstrument {
     const kitSelect = container.querySelector('#kit') as HTMLSelectElement;
     if (kitSelect) {
       kitSelect.addEventListener('change', () => {
-        this.onKitChange(kitSelect.value);
+        void this.onKitChange(kitSelect.value).catch((error) => {
+          console.error('Failed to change kit:', error);
+        });
       });
     }
   }

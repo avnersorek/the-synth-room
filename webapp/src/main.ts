@@ -8,4 +8,6 @@ import { AppInitializer } from './init/AppInitializer';
 
 // Initialize the application
 const app = new AppInitializer();
-app.init();
+void app.init().catch((error) => {
+  console.error('Failed to initialize application:', error);
+});

@@ -35,7 +35,7 @@ export class AudioEngine {
     return vol;
   }
 
-  async loadSample(name: string, url: string, instrumentId: string = 'drums') {
+  loadSample(name: string, url: string, instrumentId: string = 'drums') {
     // Create a sampler for this specific sample
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
     const sampler = DrumSamplerFactory.createSampler(name, url).connect(instrumentVolume);

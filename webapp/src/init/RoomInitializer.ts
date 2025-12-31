@@ -104,19 +104,21 @@ export class RoomInitializer {
     const ui = new UI(sequencer, app, onKitChange, onSynthChange, onLead2SynthChange, onBassTypeChange);
 
     // Listen to remote kit changes
-    sync.onKitChange(async (kitName) => {
+    sync.onKitChange((kitName) => {
       console.log(`RoomInitializer: Remote kit change detected: "${kitName}"`);
       this.resourceLoader.setLoadingKit(true);
-      try {
-        await this.resourceLoader.loadKit(sequencer, kitName);
-        // Update UI kit selector to reflect the change
-        ui.updateKitSelector(kitName);
-        console.log(`RoomInitializer: Kit "${kitName}" loaded successfully`);
-      } catch (error) {
-        console.error(`RoomInitializer: Error loading kit "${kitName}":`, error);
-      } finally {
-        this.resourceLoader.setLoadingKit(false);
-      }
+      void this.resourceLoader.loadKit(sequencer, kitName)
+        .then(() => {
+          // Update UI kit selector to reflect the change
+          ui.updateKitSelector(kitName);
+          console.log(`RoomInitializer: Kit "${kitName}" loaded successfully`);
+        })
+        .catch((error) => {
+          console.error(`RoomInitializer: Error loading kit "${kitName}":`, error);
+        })
+        .finally(() => {
+          this.resourceLoader.setLoadingKit(false);
+        });
     });
 
     // Listen to remote synth type changes

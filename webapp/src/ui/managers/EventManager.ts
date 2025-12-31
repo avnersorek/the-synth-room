@@ -28,12 +28,13 @@ export class EventManager {
    * Attach play/stop button click handlers
    */
   private attachPlayStopEvents(): void {
-    this.container.addEventListener('click', async (e) => {
+    this.container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
 
       if (target.id === 'play') {
-        await AudioInitializer.startAudioContext();
-        this.sequencer.play();
+        void AudioInitializer.startAudioContext()
+          .then(() => this.sequencer.play())
+          .catch((error) => console.error('Failed to start audio:', error));
       }
 
       if (target.id === 'stop') {
@@ -46,7 +47,7 @@ export class EventManager {
    * Attach keyboard shortcuts (spacebar for play/stop)
    */
   private attachKeyboardEvents(): void {
-    document.addEventListener('keydown', async (e) => {
+    document.addEventListener('keydown', (e) => {
       // Ignore if user is typing in an input field
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
@@ -59,8 +60,9 @@ export class EventManager {
         if (this.sequencer.isPlaying()) {
           this.sequencer.stop();
         } else {
-          await AudioInitializer.startAudioContext();
-          this.sequencer.play();
+          void AudioInitializer.startAudioContext()
+            .then(() => this.sequencer.play())
+            .catch((error) => console.error('Failed to start audio:', error));
         }
       }
     });

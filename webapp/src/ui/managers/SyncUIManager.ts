@@ -33,11 +33,16 @@ export class SyncUIManager {
       copyButton.addEventListener('click', () => {
         const roomId = this.sync.getRoomId();
         const roomUrl = roomId ? `${window.location.origin}${window.location.pathname}?room=${roomId}` : '';
-        navigator.clipboard.writeText(roomUrl);
-        copyButton.textContent = '✓';
-        setTimeout(() => {
-          copyButton.textContent = '📋';
-        }, 2000);
+        void navigator.clipboard.writeText(roomUrl)
+          .then(() => {
+            copyButton.textContent = '✓';
+            setTimeout(() => {
+              copyButton.textContent = '📋';
+            }, 2000);
+          })
+          .catch((error) => {
+            console.error('Failed to copy room URL:', error);
+          });
       });
     }
   }
