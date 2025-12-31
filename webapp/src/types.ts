@@ -20,44 +20,9 @@ export interface InstrumentParameters {
   [key: string]: any;
 }
 
-export interface DrumParameters extends InstrumentParameters {
-  volume: number;
-}
-
 export type SynthType = 'Jump' | 'Polly' | 'Tiny';
 export type Lead2SynthType = 'ElectricCello' | 'Kalimba' | 'ThinSaws';
 export type BassType = 'Guitar' | 'Bassy' | 'Lectric';
-
-export interface LeadParameters extends InstrumentParameters {
-  volume: number;
-  synthType?: SynthType;
-  attack?: number;
-  decay?: number;
-  sustain?: number;
-  release?: number;
-  cutoff?: number;
-  resonance?: number;
-}
-
-export interface Lead2Parameters extends InstrumentParameters {
-  volume: number;
-  synthType?: Lead2SynthType;
-  attack?: number;
-  decay?: number;
-  sustain?: number;
-  release?: number;
-  cutoff?: number;
-  resonance?: number;
-}
-
-export interface BassParameters extends InstrumentParameters {
-  volume: number;
-  bassType?: BassType;
-  attack?: number;
-  decay?: number;
-  sustain?: number;
-  release?: number;
-}
 
 export interface InstrumentState {
   grid: boolean[][];
