@@ -9,7 +9,7 @@ import { AbstractGridInstrument } from './base/AbstractGridInstrument';
 import { renderCell, renderLabel } from './base/GridRenderer';
 
 export class DrumInstrument extends AbstractGridInstrument {
-  private onKitChange: (kit: string) => Promise<void>;
+  private onKitChange: (kit: string) => void;
 
   private static getKitDisplayName(kitId: string): string {
     const nameMap: { [key: string]: string } = {
@@ -21,7 +21,7 @@ export class DrumInstrument extends AbstractGridInstrument {
     return nameMap[kitId] || kitId;
   }
 
-  constructor(sequencer: Sequencer, onKitChange: (kit: string) => Promise<void>) {
+  constructor(sequencer: Sequencer, onKitChange: (kit: string) => void) {
     super(sequencer, 'drums');
     this.onKitChange = onKitChange;
   }
@@ -64,9 +64,7 @@ export class DrumInstrument extends AbstractGridInstrument {
     const kitSelect = container.querySelector('#kit') as HTMLSelectElement;
     if (kitSelect) {
       kitSelect.addEventListener('change', () => {
-        void this.onKitChange(kitSelect.value).catch((error) => {
-          console.error('Failed to change kit:', error);
-        });
+        this.onKitChange(kitSelect.value);
       });
     }
   }

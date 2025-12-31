@@ -28,7 +28,7 @@ export class UI {
   private syncUIManager: SyncUIManager | null = null;
   private animationController: StepAnimationController;
 
-  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => Promise<void>, onSynthChange: (synthType: string) => void, onLead2SynthChange: (synthType: string) => void, onBassTypeChange: (bassType: string) => void) {
+  constructor(sequencer: Sequencer, container: HTMLElement, onKitChange: (kit: string) => void, onSynthChange: (synthType: string) => void, onLead2SynthChange: (synthType: string) => void, onBassTypeChange: (bassType: string) => void) {
     this.sequencer = sequencer;
     this.container = container;
 

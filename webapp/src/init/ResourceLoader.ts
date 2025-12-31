@@ -16,13 +16,13 @@ export class ResourceLoader {
   /**
    * Load a drum kit
    */
-  async loadKit(sequencer: Sequencer, kit: string): Promise<void> {
+  loadKit(sequencer: Sequencer, kit: string): void {
     console.log(`loadKit: Loading kit "${kit}"`);
 
     try {
       const drumsInstrument = sequencer.getInstrument('drums');
       if (drumsInstrument) {
-        await drumsInstrument.loadSamples(kit);
+        drumsInstrument.loadSamples(kit);
         console.log(`loadKit: All samples loaded for kit "${kit}"`);
       }
     } catch (error) {

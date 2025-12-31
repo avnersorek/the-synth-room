@@ -1,6 +1,21 @@
 import { InstrumentConfig, InstrumentParameters, InstrumentState, BassType, SynthType, Lead2SynthType } from './types';
 import { AudioEngine } from './audio';
 
+/**
+ * Helper to create a 2D boolean array with proper typing
+ */
+function createGrid(rows: number, cols: number): boolean[][] {
+  const grid: boolean[][] = [];
+  for (let i = 0; i < rows; i++) {
+    const row: boolean[] = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(false);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
 export class Instrument {
   private config: InstrumentConfig;
   private state: InstrumentState;
@@ -10,9 +25,7 @@ export class Instrument {
     this.config = config;
     this.audio = audio;
     this.state = {
-      grid: Array(config.gridRows)
-        .fill(null)
-        .map(() => Array(config.gridCols).fill(false)),
+      grid: createGrid(config.gridRows, config.gridCols),
       parameters: { ...config.parameters },
     };
   }
@@ -40,9 +53,7 @@ export class Instrument {
       console.warn(`Grid dimension mismatch for ${this.config.id}. Expected ${this.config.gridRows}x${this.config.gridCols}, got ${grid.length}x${grid[0]?.length || 0}. Recreating grid.`);
 
       // Create a new grid with correct dimensions
-      const newGrid = Array(this.config.gridRows)
-        .fill(null)
-        .map(() => Array(this.config.gridCols).fill(false));
+      const newGrid = createGrid(this.config.gridRows, this.config.gridCols);
 
       // Copy over valid data from old grid
       for (let row = 0; row < Math.min(grid.length, this.config.gridRows); row++) {
@@ -146,17 +157,15 @@ export class Instrument {
     }
   }
 
-  async loadSamples(kitName?: string): Promise<void> {
+  loadSamples(kitName?: string): void {
     const samples = this.config.samples;
 
     if (this.config.type === 'drums' && kitName) {
       // For drums, load from kit folder
-      await Promise.all(
-        samples.map(async (sample) => {
-          const path = `/sounds/${kitName}/${sample.name}.wav`;
-          await this.audio.loadSample(sample.name, path, this.config.id);
-        })
-      );
+      samples.forEach((sample) => {
+        const path = `/sounds/${kitName}/${sample.name}.wav`;
+        this.audio.loadSample(sample.name, path, this.config.id);
+      });
       this.state.currentKit = kitName;
     } else if (this.config.type === 'lead') {
       // For bass, create a MonoSynth with bass type

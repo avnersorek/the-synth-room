@@ -19,7 +19,7 @@ export class RoomInitializer {
   /**
    * Initialize a room with the given room ID and PartyKit host
    */
-  async initRoom(roomId: string, partyKitHost: string): Promise<void> {
+  initRoom(roomId: string, partyKitHost: string): void {
     const audio = new AudioEngine();
     audio.setVolume(0.7);
 
@@ -34,7 +34,7 @@ export class RoomInitializer {
 
     // Load initial kit from sync or default
     const initialKit = sync.getKit();
-    await this.resourceLoader.loadKit(sequencer, initialKit);
+    this.resourceLoader.loadKit(sequencer, initialKit);
 
     // Initialize lead synth with initial synth type from sync
     const initialSynthType = sync.getSynthType();
@@ -42,7 +42,7 @@ export class RoomInitializer {
     if (lead1Instrument) {
       lead1Instrument.setParameter('synthType', initialSynthType);
       audio.createSynth('lead1', initialSynthType as SynthType);
-      await lead1Instrument.loadSamples();
+      lead1Instrument.loadSamples();
     }
 
     // Initialize lead2 synth with initial synth type from sync
@@ -51,7 +51,7 @@ export class RoomInitializer {
     if (lead2Instrument) {
       lead2Instrument.setParameter('synthType', initialLead2SynthType);
       audio.createSynth('lead2', initialLead2SynthType as Lead2SynthType);
-      await lead2Instrument.loadSamples();
+      lead2Instrument.loadSamples();
     }
 
     // Initialize bass synth with initial bass type from sync
@@ -60,7 +60,7 @@ export class RoomInitializer {
     if (bassInstrument) {
       bassInstrument.setParameter('bassType', initialBassType);
       audio.createBassMonoSynth('bass', initialBassType as BassType);
-      await bassInstrument.loadSamples();
+      bassInstrument.loadSamples();
     }
 
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -69,12 +69,12 @@ export class RoomInitializer {
     }
 
     // Handle kit changes
-    const onKitChange = async (kit: string) => {
+    const onKitChange = (kit: string) => {
       // Update sync if this is a local change
       if (!this.resourceLoader.isLoadingKit()) {
         sync.setKit(kit);
       }
-      await this.resourceLoader.loadKit(sequencer, kit);
+      this.resourceLoader.loadKit(sequencer, kit);
     };
 
     // Handle synth type changes
@@ -110,18 +110,16 @@ export class RoomInitializer {
     sync.onKitChange((kitName) => {
       console.log(`RoomInitializer: Remote kit change detected: "${kitName}"`);
       this.resourceLoader.setLoadingKit(true);
-      void this.resourceLoader.loadKit(sequencer, kitName)
-        .then(() => {
-          // Update UI kit selector to reflect the change
-          ui.updateKitSelector(kitName);
-          console.log(`RoomInitializer: Kit "${kitName}" loaded successfully`);
-        })
-        .catch((error) => {
-          console.error(`RoomInitializer: Error loading kit "${kitName}":`, error);
-        })
-        .finally(() => {
-          this.resourceLoader.setLoadingKit(false);
-        });
+      try {
+        this.resourceLoader.loadKit(sequencer, kitName);
+        // Update UI kit selector to reflect the change
+        ui.updateKitSelector(kitName);
+        console.log(`RoomInitializer: Kit "${kitName}" loaded successfully`);
+      } catch (error) {
+        console.error(`RoomInitializer: Error loading kit "${kitName}":`, error);
+      } finally {
+        this.resourceLoader.setLoadingKit(false);
+      }
     });
 
     // Listen to remote synth type changes

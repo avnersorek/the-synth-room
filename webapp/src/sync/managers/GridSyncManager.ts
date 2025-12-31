@@ -8,11 +8,27 @@ import { ConnectionStatus } from '../types';
 
 /**
  * Yjs delta change interface (since Yjs doesn't export proper types for this)
+ * Note: insert can be string, number, array, or other types depending on the Y.Array content type
  */
 interface YjsDeltaChange {
   retain?: number;
   delete?: number;
-  insert?: number | number[];
+  insert?: unknown;
+}
+
+/**
+ * Helper to create a 2D boolean array with proper typing
+ */
+function createGridFromYjs(rows: number, cols: number): boolean[][] {
+  const grid: boolean[][] = [];
+  for (let i = 0; i < rows; i++) {
+    const row: boolean[] = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(false);
+    }
+    grid.push(row);
+  }
+  return grid;
 }
 
 export class GridSyncManager {
@@ -35,12 +51,12 @@ export class GridSyncManager {
 
     const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
     if (!instrument) {
-      return Array(defaultRows).fill(null).map(() => Array(defaultCols).fill(false));
+      return createGridFromYjs(defaultRows, defaultCols);
     }
 
     const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
     if (!grid) {
-      return Array(defaultRows).fill(null).map(() => Array(defaultCols).fill(false));
+      return createGridFromYjs(defaultRows, defaultCols);
     }
 
     const result: boolean[][] = [];
@@ -155,11 +171,14 @@ export class GridSyncManager {
               } else if (change.insert !== undefined) {
                 // Items were inserted - these are the changes we care about
                 const insertedItems = Array.isArray(change.insert) ? change.insert : [change.insert];
-                insertedItems.forEach((item: number) => {
-                  const value = item === 1;
-                  console.log(`Calling callback for cell [${instrumentId}, ${rowIndex}, ${position}] = ${value}`);
-                  callback(instrumentId, rowIndex, position, value);
-                  position++;
+                insertedItems.forEach((item: unknown) => {
+                  // Validate that item is a number (0 or 1)
+                  if (typeof item === 'number') {
+                    const value = item === 1;
+                    console.log(`Calling callback for cell [${instrumentId}, ${rowIndex}, ${position}] = ${value}`);
+                    callback(instrumentId, rowIndex, position, value);
+                    position++;
+                  }
                 });
               }
             });

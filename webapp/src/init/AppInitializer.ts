@@ -23,7 +23,7 @@ export class AppInitializer {
 
     if (roomId) {
       // Room mode: join or create a room
-      await this.initRoom(roomId);
+      this.initRoom(roomId);
     } else {
       // Lobby mode: show room browser
       await this.initLobby();
@@ -33,9 +33,9 @@ export class AppInitializer {
   /**
    * Initialize a room
    */
-  private async initRoom(roomId: string): Promise<void> {
+  private initRoom(roomId: string): void {
     const partyKitHost = getPartyKitHost();
-    await this.roomInitializer.initRoom(roomId, partyKitHost);
+    this.roomInitializer.initRoom(roomId, partyKitHost);
   }
 
   /**
