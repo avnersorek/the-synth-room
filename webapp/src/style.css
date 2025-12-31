@@ -74,6 +74,21 @@ h3 {
   gap: 15px;
 }
 
+.panel-divider {
+  width: 2px;
+  height: 40px;
+  background: #444;
+  margin: 0 20px;
+}
+
+.section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
 .room-url-section {
   margin-bottom: 20px;
 }
