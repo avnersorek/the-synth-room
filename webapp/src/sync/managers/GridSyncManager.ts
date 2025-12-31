@@ -6,6 +6,15 @@ import * as Y from 'yjs';
 import { INSTRUMENTS } from '../../types';
 import { ConnectionStatus } from '../types';
 
+/**
+ * Yjs delta change interface (since Yjs doesn't export proper types for this)
+ */
+interface YjsDeltaChange {
+  retain?: number;
+  delete?: number;
+  insert?: number | number[];
+}
+
 export class GridSyncManager {
   private ydoc: Y.Doc;
   private instruments: Y.Map<unknown>;
@@ -136,11 +145,10 @@ export class GridSyncManager {
 
             // Check what changed in this row using the delta
             let position = 0;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            event.changes.delta.forEach((change: any) => {
+            event.changes.delta.forEach((change: YjsDeltaChange) => {
               if (change.retain !== undefined) {
                 // Skip retained items
-                position += change.retain as number;
+                position += change.retain;
               } else if (change.delete !== undefined) {
                 // Items were deleted - skip to next position
                 // position stays the same because items are deleted
