@@ -63,7 +63,10 @@ export class RoomInitializer {
       await bassInstrument.loadSamples();
     }
 
-    const app = document.querySelector<HTMLDivElement>('#app')!;
+    const app = document.querySelector<HTMLDivElement>('#app');
+    if (!app) {
+      throw new Error('App container not found');
+    }
 
     // Handle kit changes
     const onKitChange = async (kit: string) => {

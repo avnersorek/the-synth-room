@@ -40,8 +40,8 @@ export class InstrumentPanel {
   render(): string {
     const cardsHtml = this.instruments
       .map(instrument => {
-        const card = this.glowCards.get(instrument.id)!;
-        return card.render();
+        const card = this.glowCards.get(instrument.id);
+        return card ? card.render() : '';
       })
       .join('');
 

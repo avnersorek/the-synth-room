@@ -65,15 +65,18 @@ export class Sequencer {
   private initializeFromSync() {
     if (!this.sync) {return;}
 
+    // Store reference to sync for use in callbacks
+    const sync = this.sync;
+
     // Listen for connection status changes to refresh state when synced
-    this.sync.onConnectionChange((status) => {
+    sync.onConnectionChange((status) => {
       if (status.synced) {
         // Reload state after sync completes
-        const drumsGrid = this.sync!.getGrid('drums');
-        const lead1Grid = this.sync!.getGrid('lead1');
-        const lead2Grid = this.sync!.getGrid('lead2');
-        const bassGrid = this.sync!.getGrid('bass');
-        this.bpm = this.sync!.getBpm();
+        const drumsGrid = sync.getGrid('drums');
+        const lead1Grid = sync.getGrid('lead1');
+        const lead2Grid = sync.getGrid('lead2');
+        const bassGrid = sync.getGrid('bass');
+        this.bpm = sync.getBpm();
 
         const drumsInstrument = this.instruments.get('drums');
         const lead1Instrument = this.instruments.get('lead1');
@@ -87,22 +90,22 @@ export class Sequencer {
 
         // Load volumes and effect sends from sync
         this.instruments.forEach((instrument, id) => {
-          const volume = this.sync!.getInstrumentVolume(id);
+          const volume = sync.getInstrumentVolume(id);
           instrument.setParameter('volume', volume);
           this.audio.setInstrumentVolume(id, volume);
 
-          const effectSend = this.sync!.getEffectSend(id);
+          const effectSend = sync.getEffectSend(id);
           this.audio.setEffectSend(id, effectSend);
         });
       }
     });
 
     // Load initial state from Yjs
-    const drumsGrid = this.sync.getGrid('drums');
-    const lead1Grid = this.sync.getGrid('lead1');
-    const lead2Grid = this.sync.getGrid('lead2');
-    const bassGrid = this.sync.getGrid('bass');
-    this.bpm = this.sync.getBpm();
+    const drumsGrid = sync.getGrid('drums');
+    const lead1Grid = sync.getGrid('lead1');
+    const lead2Grid = sync.getGrid('lead2');
+    const bassGrid = sync.getGrid('bass');
+    this.bpm = sync.getBpm();
 
     const drumsInstrument = this.instruments.get('drums');
     const lead1Instrument = this.instruments.get('lead1');
@@ -116,11 +119,11 @@ export class Sequencer {
 
     // Load volumes and effect sends from sync
     this.instruments.forEach((instrument, id) => {
-      const volume = this.sync!.getInstrumentVolume(id);
+      const volume = sync.getInstrumentVolume(id);
       instrument.setParameter('volume', volume);
       this.audio.setInstrumentVolume(id, volume);
 
-      const effectSend = this.sync!.getEffectSend(id);
+      const effectSend = sync.getEffectSend(id);
       this.audio.setEffectSend(id, effectSend);
     });
 

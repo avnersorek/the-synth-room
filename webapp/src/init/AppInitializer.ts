@@ -42,7 +42,10 @@ export class AppInitializer {
    * Initialize the lobby
    */
   private async initLobby(): Promise<void> {
-    const app = document.querySelector<HTMLDivElement>('#app')!;
+    const app = document.querySelector<HTMLDivElement>('#app');
+    if (!app) {
+      throw new Error('App container not found');
+    }
     const partyKitHost = getPartyKitHost();
     const lobby = new Lobby(app, partyKitHost);
     await lobby.render();

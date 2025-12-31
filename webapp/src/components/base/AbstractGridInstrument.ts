@@ -36,9 +36,13 @@ export abstract class AbstractGridInstrument {
       const target = e.target as HTMLElement;
 
       if (target.classList.contains('cell')) {
-        const row = parseInt(target.dataset.row!);
-        const col = parseInt(target.dataset.col!);
-        this.onCellClick(row, col, target);
+        const rowStr = target.dataset.row;
+        const colStr = target.dataset.col;
+        if (rowStr !== undefined && colStr !== undefined) {
+          const row = parseInt(rowStr);
+          const col = parseInt(colStr);
+          this.onCellClick(row, col, target);
+        }
       }
     });
 
@@ -85,10 +89,15 @@ export abstract class AbstractGridInstrument {
    */
   updateGridDisplay(container: HTMLElement): void {
     container.querySelectorAll('.cell').forEach((cell) => {
-      const row = parseInt((cell as HTMLElement).dataset.row!);
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      const isActive = this.sequencer.isActive(this.instrumentId, row, col);
-      cell.classList.toggle('active', isActive);
+      const cellElement = cell as HTMLElement;
+      const rowStr = cellElement.dataset.row;
+      const colStr = cellElement.dataset.col;
+      if (rowStr !== undefined && colStr !== undefined) {
+        const row = parseInt(rowStr);
+        const col = parseInt(colStr);
+        const isActive = this.sequencer.isActive(this.instrumentId, row, col);
+        cell.classList.toggle('active', isActive);
+      }
     });
   }
 
@@ -99,8 +108,11 @@ export abstract class AbstractGridInstrument {
   updateCurrentStep(container: HTMLElement, currentStep: number): void {
     const isPlaying = this.sequencer.isPlaying();
     container.querySelectorAll('.cell').forEach((cell) => {
-      const col = parseInt((cell as HTMLElement).dataset.col!);
-      cell.classList.toggle('current', isPlaying && col === currentStep);
+      const colStr = (cell as HTMLElement).dataset.col;
+      if (colStr !== undefined) {
+        const col = parseInt(colStr);
+        cell.classList.toggle('current', isPlaying && col === currentStep);
+      }
     });
   }
 
