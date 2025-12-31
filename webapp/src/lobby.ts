@@ -3,6 +3,19 @@ export interface Room {
   connectionCount: number;
 }
 
+interface RoomsResponse {
+  roomsList: Room[];
+}
+
+function isRoomsResponse(data: unknown): data is RoomsResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'roomsList' in data &&
+    Array.isArray((data as RoomsResponse).roomsList)
+  );
+}
+
 export class Lobby {
   private container: HTMLElement;
   private partyKitHost: string;
@@ -60,8 +73,12 @@ export class Lobby {
         throw new Error(`Failed to fetch rooms: ${response.statusText}`);
       }
 
-      const rooms = await response.json();
-      this.renderRoomsList(rooms.roomsList);
+      const data: unknown = await response.json();
+      if (!isRoomsResponse(data)) {
+        throw new Error('Invalid response format from server');
+      }
+
+      this.renderRoomsList(data.roomsList);
     } catch (error) {
       console.error('Error loading rooms:', error);
       const roomsList = this.container.querySelector('#rooms-list');
