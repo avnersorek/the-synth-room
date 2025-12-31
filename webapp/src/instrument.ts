@@ -1,4 +1,4 @@
-import { InstrumentConfig, InstrumentParameters, InstrumentState } from './types';
+import { InstrumentConfig, InstrumentParameters, InstrumentState, BassType, SynthType, Lead2SynthType } from './types';
 import { AudioEngine } from './audio';
 
 export class Instrument {
@@ -75,8 +75,36 @@ export class Instrument {
     return this.state.parameters;
   }
 
-  setParameter(key: string, value: any): void {
+  setParameter(key: string, value: unknown): void {
     this.state.parameters[key] = value;
+  }
+
+  /**
+   * Helper to safely get bass type from parameters
+   */
+  private getBassType(): BassType {
+    const bassType = this.state.parameters['bassType'];
+    if (typeof bassType === 'string' && (bassType === 'Guitar' || bassType === 'Bassy' || bassType === 'Lectric')) {
+      return bassType as BassType;
+    }
+    return 'Guitar'; // Default
+  }
+
+  /**
+   * Helper to safely get synth type from parameters
+   */
+  private getSynthType(): SynthType | Lead2SynthType {
+    const synthType = this.state.parameters['synthType'];
+    // Check if it's a valid SynthType or Lead2SynthType
+    if (typeof synthType === 'string') {
+      if (synthType === 'Jump' || synthType === 'Polly' || synthType === 'Tiny') {
+        return synthType as SynthType;
+      }
+      if (synthType === 'ElectricCello' || synthType === 'Kalimba' || synthType === 'ThinSaws') {
+        return synthType as Lead2SynthType;
+      }
+    }
+    return 'Jump'; // Default
   }
 
   getCurrentKit(): string | undefined {
@@ -133,12 +161,12 @@ export class Instrument {
     } else if (this.config.type === 'lead') {
       // For bass, create a MonoSynth with bass type
       if (this.config.id === 'bass') {
-        const bassType = (this.state.parameters as any).bassType || 'Guitar';
+        const bassType = this.getBassType();
         this.audio.createBassMonoSynth(this.config.id, bassType);
         console.log(`Bass instrument ${this.config.id} ready with ${bassType} preset`);
       } else {
         // For other lead synths, create the poly synth
-        const synthType = (this.state.parameters as any).synthType || 'Synth';
+        const synthType = this.getSynthType();
         this.audio.createSynth(this.config.id, synthType);
         console.log(`Lead instrument ${this.config.id} ready (synthesis mode)`);
       }

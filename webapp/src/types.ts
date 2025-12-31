@@ -17,7 +17,7 @@ export interface InstrumentConfig {
 
 export interface InstrumentParameters {
   volume?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export type SynthType = 'Jump' | 'Polly' | 'Tiny';
