@@ -1,6 +1,11 @@
 # fix
 - strange card background behind drums
-- space bar is not working well and there is a lot "selecting text" when playing with the platform
+
+# features
+- a little more effects
+
+
+
 
 # code
 

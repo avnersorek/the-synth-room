@@ -68,7 +68,17 @@
   width: var(--card-size);
   min-height: 200px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.3s ease,
+    --backup-border 0.3s ease,
+    --bg-spot-opacity 0.3s ease,
+    --border-spot-opacity 0.3s ease;
+  /* Apply active styling to all cards */
+  --backup-border: hsl(30 100% 50% / 0.6);
+  --bg-spot-opacity: 0.25;
+  --border-spot-opacity: 1;
+  border-color: #ff9800;
 }
 
 .instrument-card:hover {
@@ -135,6 +145,7 @@
     linear-gradient(white, white);
   mask-clip: padding-box, border-box;
   mask-composite: intersect;
+  transition: filter 0.3s ease;
 }
 
 /* Emphasis light (colored glow) - 75% spotlight */
@@ -145,7 +156,7 @@
     var(--y),
     hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 50) * 1%) / var(--border-spot-opacity, 1)), transparent 100%
   );
-  filter: brightness(2);
+  filter: brightness(2.5);
 }
 
 /* White spotlight - 40% size */
@@ -156,21 +167,6 @@
     var(--y),
     hsl(0 100% 100% / var(--border-light-opacity, 1)), transparent 100%
   );
-}
-
-/* Active card styling */
-.instrument-card.active {
-  --backup-border: hsl(30 100% 50% / 0.6);
-  --bg-spot-opacity: 0.25;
-  --border-spot-opacity: 1;
-  border-color: #ff9800;
-}
-
-.instrument-card.active::before {
-  filter: brightness(2.5);
-}
-
-.instrument-card.active::after {
   filter: brightness(1.5);
 }
 

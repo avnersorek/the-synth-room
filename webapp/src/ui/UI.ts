@@ -19,7 +19,6 @@ import { InstrumentSyncCoordinator } from './managers/InstrumentSyncCoordinator'
 export class UI {
   private sequencer: Sequencer;
   private container: HTMLElement;
-  private currentInstrumentId: string = 'drums';
   private instrumentRegistry: InstrumentRegistry;
   private instrumentUIManager: InstrumentUIManager;
   private instrumentSyncCoordinator: InstrumentSyncCoordinator;
@@ -58,8 +57,6 @@ export class UI {
     const instruments = Object.values(INSTRUMENTS);
     this.instrumentPanel = new InstrumentPanel(
       instruments,
-      this.currentInstrumentId,
-      (instrumentId) => this.onInstrumentChange(instrumentId),
       (instrumentId) => this.getInstrumentContent(instrumentId)
     );
 
@@ -142,13 +139,6 @@ export class UI {
     if (this.syncUIManager) {
       this.setupSyncUI();
     }
-  }
-
-  private onInstrumentChange(instrumentId: string) {
-    this.currentInstrumentId = instrumentId;
-    this.instrumentPanel.updateActiveCard(instrumentId);
-    // Re-attach events after panel updates
-    setTimeout(() => this.instrumentUIManager.attachAllInstrumentEvents(), 0);
   }
 
   private attachEvents() {

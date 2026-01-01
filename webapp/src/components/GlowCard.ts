@@ -1,43 +1,31 @@
 export interface GlowCardConfig {
   instrumentId: string;
   title: string;
-  isActive: boolean;
-  content?: string; // Optional HTML content to render inside the card
+  content: string;
 }
 
 export class GlowCard {
   private instrumentId: string;
   private title: string;
-  private isActive: boolean;
   private content: string;
 
   constructor(config: GlowCardConfig) {
     this.instrumentId = config.instrumentId;
     this.title = config.title;
-    this.isActive = config.isActive;
-    this.content = config.content || '';
+    this.content = config.content;
   }
 
   render(): string {
-    const activeClass = this.isActive ? 'active' : '';
     return `
       <div class="instrument-card-wrapper" data-instrument-id="${this.instrumentId}">
-        <div class="instrument-card ${activeClass}" data-glow data-instrument="${this.instrumentId}">
+        <div class="instrument-card active" data-glow data-instrument="${this.instrumentId}">
           <div class="instrument-card-header">
             <h2>${this.title}</h2>
           </div>
-          ${this.content ? `<div class="instrument-card-content">${this.content}</div>` : ''}
+          <div class="instrument-card-content">${this.content}</div>
         </div>
       </div>
     `;
-  }
-
-  updateContent(content: string) {
-    this.content = content;
-  }
-
-  setActive(active: boolean) {
-    this.isActive = active;
   }
 
   /**
