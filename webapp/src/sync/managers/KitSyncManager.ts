@@ -18,7 +18,7 @@ export class KitSyncManager extends ObservableSync<string> {
    * Get current kit name
    */
   get(): string {
-    return this.map.get(this.key) as string || 'kit_a';
+    return this.map.get(this.key) as string || 'kit_cr78';
   }
 
   /**

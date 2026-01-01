@@ -106,7 +106,7 @@ export class SyncManager {
     // Initialize kit map (shared across the app, not per-instrument)
     const kit = this.ydoc.getMap('kit');
     if (!kit.has('name')) {
-      kit.set('name', 'kit_a');
+      kit.set('name', 'kit_cr78');
     }
 
     // Initialize synth type map (for lead instrument)

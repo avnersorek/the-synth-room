@@ -13,6 +13,7 @@ export class AudioEngine {
   private volume: Tone.Volume;
   private instrumentVolumes: Map<string, Tone.Volume>;
   private effects: EffectsController;
+  private loadedSamples: Set<string>;
 
   constructor() {
     this.samplers = new Map();
@@ -21,6 +22,7 @@ export class AudioEngine {
     this.volume = new Tone.Volume(0).toDestination();
     this.instrumentVolumes = new Map();
     this.effects = new EffectsController(this.volume);
+    this.loadedSamples = new Set();
   }
 
   private getOrCreateInstrumentVolume(instrumentId: string): Tone.Volume {
@@ -38,7 +40,11 @@ export class AudioEngine {
   loadSample(name: string, url: string, instrumentId: string = 'drums') {
     // Create a sampler for this specific sample
     const instrumentVolume = this.getOrCreateInstrumentVolume(instrumentId);
-    const sampler = DrumSamplerFactory.createSampler(name, url).connect(instrumentVolume);
+    const sampler = DrumSamplerFactory.createSampler(name, url, () => {
+      // Mark sample as loaded when it finishes loading
+      this.loadedSamples.add(name);
+      console.log(`Sample ${name} loaded and ready`);
+    }).connect(instrumentVolume);
 
     this.samplers.set(name, sampler);
   }
@@ -83,6 +89,12 @@ export class AudioEngine {
   play(name: string, time?: number) {
     const sampler = this.samplers.get(name);
     if (!sampler) {return;}
+
+    // Check if sample has finished loading
+    if (!this.loadedSamples.has(name)) {
+      console.warn(`Sample ${name} not loaded yet, skipping playback`);
+      return;
+    }
 
     // Play the sample at C3 (the note we loaded it at)
     // If time is provided, schedule it; otherwise play immediately
@@ -163,6 +175,7 @@ export class AudioEngine {
     this.monoSynths.clear();
     this.instrumentVolumes.forEach(vol => vol.dispose());
     this.instrumentVolumes.clear();
+    this.loadedSamples.clear();
     this.effects.dispose();
   }
 
