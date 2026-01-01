@@ -124,6 +124,13 @@ export class SyncUIManager {
   }
 
   /**
+   * Set up grid column count change listener
+   */
+  setupGridColsChangeListener(callback: (gridCols: number) => void): void {
+    this.sync.onGridColsChange(callback);
+  }
+
+  /**
    * Set up volume change listener
    */
   setupVolumeChangeListener(callback: (instrumentId: string, value: number) => void): void {

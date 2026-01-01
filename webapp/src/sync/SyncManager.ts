@@ -5,10 +5,11 @@
 
 import * as Y from 'yjs';
 import PartyKitProvider from 'y-partykit/provider';
-import { INSTRUMENTS } from '../types';
+import { INSTRUMENTS, GridColumnCount } from '../types';
 import { SyncConfig, ConnectionStatus } from './types';
 import { GridSyncManager } from './managers/GridSyncManager';
 import { BpmSyncManager } from './managers/BpmSyncManager';
+import { GridColsSyncManager } from './managers/GridColsSyncManager';
 import { KitSyncManager } from './managers/KitSyncManager';
 import { SynthTypeSyncManager } from './managers/SynthTypeSyncManager';
 import { Lead2SynthTypeSyncManager } from './managers/Lead2SynthTypeSyncManager';
@@ -26,6 +27,7 @@ export class SyncManager {
   // Domain-specific managers
   private gridManager!: GridSyncManager;
   private bpmManager!: BpmSyncManager;
+  private gridColsManager!: GridColsSyncManager;
   private kitManager!: KitSyncManager;
   private synthTypeManager!: SynthTypeSyncManager;
   private lead2SynthTypeManager!: Lead2SynthTypeSyncManager;
@@ -130,12 +132,19 @@ export class SyncManager {
     if (!bpm.has('value')) {
       bpm.set('value', 120);
     }
+
+    // Initialize grid column count at root level (shared across all instruments)
+    const gridCols = this.ydoc.getMap('gridCols');
+    if (!gridCols.has('value')) {
+      gridCols.set('value', 16);
+    }
   }
 
   private initializeManagers() {
     // Initialize domain-specific managers
     this.gridManager = new GridSyncManager(this.ydoc, this.instruments);
     this.bpmManager = new BpmSyncManager(this.ydoc, this.ydoc.getMap('bpm'));
+    this.gridColsManager = new GridColsSyncManager(this.ydoc, this.ydoc.getMap('gridCols'));
     this.kitManager = new KitSyncManager(this.ydoc, this.ydoc.getMap('kit'));
     this.synthTypeManager = new SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('synthType'));
     this.lead2SynthTypeManager = new Lead2SynthTypeSyncManager(this.ydoc, this.ydoc.getMap('lead2SynthType'));
@@ -165,6 +174,10 @@ export class SyncManager {
     this.gridManager.setGrid(instrumentId, grid);
   }
 
+  resizeGrid(instrumentId: string, newColCount: number) {
+    this.gridManager.resizeGrid(instrumentId, newColCount);
+  }
+
   onGridChange(callback: (instrumentId: string, row: number, col: number, value: boolean) => void) {
     this.gridManager.onGridChange(callback, (cb) => this.onConnectionChange(cb));
   }
@@ -180,6 +193,19 @@ export class SyncManager {
 
   onBpmChange(callback: (value: number) => void) {
     this.bpmManager.onBpmChange(callback, (cb) => this.onConnectionChange(cb));
+  }
+
+  // Grid column count operations - delegate to GridColsSyncManager
+  getGridCols(): number {
+    return this.gridColsManager.get();
+  }
+
+  setGridCols(value: number) {
+    this.gridColsManager.set(value as GridColumnCount);
+  }
+
+  onGridColsChange(callback: (value: number) => void) {
+    this.gridColsManager.onGridColsChange(callback, (cb) => this.onConnectionChange(cb));
   }
 
   // Kit operations - delegate to KitSyncManager

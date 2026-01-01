@@ -4,14 +4,17 @@
 
 import { Sequencer } from '../../sequencer';
 import { AudioInitializer } from '../../utils/AudioInitializer';
+import { InstrumentUIManager } from './InstrumentUIManager';
 
 export class EventManager {
   private sequencer: Sequencer;
   private container: HTMLElement;
+  private instrumentUIManager: InstrumentUIManager;
 
-  constructor(sequencer: Sequencer, container: HTMLElement) {
+  constructor(sequencer: Sequencer, container: HTMLElement, instrumentUIManager: InstrumentUIManager) {
     this.sequencer = sequencer;
     this.container = container;
+    this.instrumentUIManager = instrumentUIManager;
   }
 
   /**
@@ -22,6 +25,7 @@ export class EventManager {
     this.attachKeyboardEvents();
     this.attachBpmControl();
     this.attachVolumeControl();
+    this.attachGridColsControl();
   }
 
   /**
@@ -88,6 +92,33 @@ export class EventManager {
     if (volumeInput) {
       volumeInput.addEventListener('input', () => {
         this.sequencer.setVolume(parseFloat(volumeInput.value));
+      });
+    }
+  }
+
+  /**
+   * Attach grid column count control handler
+   */
+  private attachGridColsControl(): void {
+    const gridColsSelect = this.container.querySelector('#grid-cols') as HTMLSelectElement;
+    if (gridColsSelect) {
+      gridColsSelect.addEventListener('change', () => {
+        const value = parseInt(gridColsSelect.value);
+        this.sequencer.setGridCols(value);
+
+        const sync = this.sequencer.getSync();
+        if (sync) {
+          // Resize all instrument grids in Yjs before re-rendering
+          const instruments = ['drums', 'lead1', 'lead2', 'bass'];
+          instruments.forEach((instrumentId) => {
+            sync.resizeGrid(instrumentId, value);
+          });
+
+          sync.setGridCols(value);
+        }
+
+        // Re-render all instrument grids with new column count
+        this.instrumentUIManager.reRenderAllInstruments();
       });
     }
   }

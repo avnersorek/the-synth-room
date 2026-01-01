@@ -44,13 +44,14 @@ export class DrumInstrument extends AbstractGridInstrument {
     `;
   }
 
-  protected renderGrid(): string {
+  public renderGrid(): string {
     let html = '';
+    const gridCols = this.getGridCols();
 
     for (let row = 0; row < 8; row++) {
       html += `<div class="row">`;
       html += renderLabel(SAMPLES[row]);
-      for (let col = 0; col < 16; col++) {
+      for (let col = 0; col < gridCols; col++) {
         html += renderCell(row, col);
       }
       html += `</div>`;
@@ -59,13 +60,13 @@ export class DrumInstrument extends AbstractGridInstrument {
     return html;
   }
 
-  protected attachAdditionalEvents(container: HTMLElement): void {
+  protected attachAdditionalEvents(container: HTMLElement, signal: AbortSignal): void {
     // Kit selector change handler
     const kitSelect = container.querySelector('#kit') as HTMLSelectElement;
     if (kitSelect) {
       kitSelect.addEventListener('change', () => {
         this.onKitChange(kitSelect.value);
-      });
+      }, { signal });
     }
   }
 

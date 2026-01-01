@@ -104,6 +104,41 @@ export class GridSyncManager {
   }
 
   /**
+   * Resize grid to match new column count
+   */
+  resizeGrid(instrumentId: string, newColCount: number): void {
+    const instrument = this.instruments.get(instrumentId) as Y.Map<unknown>;
+    if (!instrument) {
+      console.warn(`Instrument ${instrumentId} not found`);
+      return;
+    }
+
+    const grid = instrument.get('grid') as Y.Array<Y.Array<number>>;
+    if (!grid || grid.length === 0) {
+      console.warn(`Grid not initialized for ${instrumentId}`);
+      return;
+    }
+
+    this.ydoc.transact(() => {
+      // Resize each row
+      for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+        const rowArray = grid.get(rowIndex);
+        const currentCols = rowArray.length;
+
+        if (newColCount > currentCols) {
+          // Add new columns (fill with 0)
+          for (let col = currentCols; col < newColCount; col++) {
+            rowArray.push([0]);
+          }
+        } else if (newColCount < currentCols) {
+          // Remove columns from the end
+          rowArray.delete(newColCount, currentCols - newColCount);
+        }
+      }
+    }, 'local');
+  }
+
+  /**
    * Set entire grid state (for initialization)
    */
   setGrid(instrumentId: string, grid: boolean[][]): void {

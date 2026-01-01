@@ -68,6 +68,29 @@ export class Instrument {
     }
   }
 
+  updateGridCols(newCols: number): void {
+    const oldGrid = this.state.grid;
+    const oldCols = this.config.gridCols;
+    const rows = this.config.gridRows;
+
+    // Create new grid with resized data
+    const newGrid = createGrid(rows, newCols);
+
+    // Copy overlapping data
+    const overlapCols = Math.min(oldCols, newCols);
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < overlapCols; col++) {
+        newGrid[row][col] = oldGrid[row][col];
+      }
+      // If expanding, remaining cells are already false
+      // If shrinking, columns beyond overlap are discarded
+    }
+
+    // Update config and state
+    this.config.gridCols = newCols;
+    this.state.grid = newGrid;
+  }
+
   toggle(row: number, col: number): void {
     if (row < 0 || row >= this.config.gridRows || col < 0 || col >= this.config.gridCols) {
       return;

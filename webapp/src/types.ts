@@ -1,5 +1,9 @@
 export type InstrumentType = 'drums' | 'lead';
 
+export type GridColumnCount = 16 | 32 | 64 | 8;
+
+export const GRID_COLUMN_COUNTS: GridColumnCount[] = [16, 32];
+
 export interface InstrumentSample {
   name: string;
   path: string;

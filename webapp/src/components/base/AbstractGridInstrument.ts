@@ -8,10 +8,19 @@ import { Sequencer } from '../../sequencer';
 export abstract class AbstractGridInstrument {
   protected sequencer: Sequencer;
   protected instrumentId: string;
+  protected eventController: AbortController | null = null;
 
   constructor(sequencer: Sequencer, instrumentId: string) {
     this.sequencer = sequencer;
     this.instrumentId = instrumentId;
+  }
+
+  /**
+   * Get the current grid column count from the sync manager
+   */
+  protected getGridCols(): number {
+    const sync = this.sequencer.getSync();
+    return sync ? sync.getGridCols() : 16;
   }
 
   /**
@@ -24,13 +33,19 @@ export abstract class AbstractGridInstrument {
    * Render the grid portion
    * Must be implemented by subclasses
    */
-  protected abstract renderGrid(): string;
+  public abstract renderGrid(): string;
 
   /**
    * Attach event handlers to the container
    * Can be overridden by subclasses for custom behavior
    */
   attachEvents(container: HTMLElement): void {
+    // Clean up any existing event listeners
+    if (this.eventController) {
+      this.eventController.abort();
+    }
+    this.eventController = new AbortController();
+
     // Cell click handler
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -44,7 +59,7 @@ export abstract class AbstractGridInstrument {
           this.onCellClick(row, col, target);
         }
       }
-    });
+    }, { signal: this.eventController.signal });
 
     // Volume control handler
     const volumeSlider = container.querySelector(`#${this.instrumentId}-volume`) as HTMLInputElement;
@@ -52,7 +67,7 @@ export abstract class AbstractGridInstrument {
       volumeSlider.addEventListener('input', (e) => {
         const value = parseFloat((e.target as HTMLInputElement).value);
         this.sequencer.setInstrumentVolume(this.instrumentId, value);
-      });
+      }, { signal: this.eventController.signal });
     }
 
     // Effect send control handler
@@ -61,11 +76,11 @@ export abstract class AbstractGridInstrument {
       effectSendSlider.addEventListener('input', (e) => {
         const value = parseFloat((e.target as HTMLInputElement).value);
         this.sequencer.setEffectSend(this.instrumentId, value);
-      });
+      }, { signal: this.eventController.signal });
     }
 
     // Let subclasses attach additional events
-    this.attachAdditionalEvents(container);
+    this.attachAdditionalEvents(container, this.eventController.signal);
   }
 
   /**
@@ -79,7 +94,7 @@ export abstract class AbstractGridInstrument {
   /**
    * Hook for subclasses to attach additional events
    */
-  protected attachAdditionalEvents(_container: HTMLElement): void {
+  protected attachAdditionalEvents(_container: HTMLElement, _signal: AbortSignal): void {
     // Override in subclasses if needed
   }
 

@@ -40,8 +40,9 @@ export class LeadInstrument extends AbstractGridInstrument {
     `;
   }
 
-  protected renderGrid(): string {
+  public renderGrid(): string {
     let html = '';
+    const gridCols = this.getGridCols();
 
     // Render notes in reverse order (C4 at top, C2 at bottom) like a piano roll
     for (let row = 24; row >= 0; row--) {
@@ -51,7 +52,7 @@ export class LeadInstrument extends AbstractGridInstrument {
 
       html += `<div class="row lead-row ${keyClass}">`;
       html += renderLabel(noteName, 'lead-label');
-      for (let col = 0; col < 16; col++) {
+      for (let col = 0; col < gridCols; col++) {
         html += renderCell(row, col, 'lead-cell');
       }
       html += `</div>`;
@@ -60,13 +61,13 @@ export class LeadInstrument extends AbstractGridInstrument {
     return html;
   }
 
-  protected attachAdditionalEvents(container: HTMLElement): void {
+  protected attachAdditionalEvents(container: HTMLElement, signal: AbortSignal): void {
     // Synth type selector change handler
     const synthSelect = container.querySelector('#synth-type') as HTMLSelectElement;
     if (synthSelect) {
       synthSelect.addEventListener('change', () => {
         this.onSynthChange(synthSelect.value);
-      });
+      }, { signal });
     }
   }
 

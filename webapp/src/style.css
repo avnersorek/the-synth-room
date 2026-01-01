@@ -198,12 +198,35 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: auto;
+  scrollbar-color: #666 #2a2a2a;
+  max-width: 100%;
+}
+
+.grid::-webkit-scrollbar {
+  height: 12px;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 6px;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 6px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .row {
   display: flex;
   gap: 4px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .label {
@@ -239,6 +262,54 @@ button {
   background: #1f1f1f;
 }
 
+.cell.beat-4 {
+  background: #2a2a2a;
+}
+
+.cell.beat-5 {
+  background: #1f1f1f;
+}
+
+.cell.beat-6 {
+  background: #2a2a2a;
+}
+
+.cell.beat-7 {
+  background: #1f1f1f;
+}
+
+.cell.beat-8 {
+  background: #2a2a2a;
+}
+
+.cell.beat-9 {
+  background: #1f1f1f;
+}
+
+.cell.beat-10 {
+  background: #2a2a2a;
+}
+
+.cell.beat-11 {
+  background: #1f1f1f;
+}
+
+.cell.beat-12 {
+  background: #2a2a2a;
+}
+
+.cell.beat-13 {
+  background: #1f1f1f;
+}
+
+.cell.beat-14 {
+  background: #2a2a2a;
+}
+
+.cell.beat-15 {
+  background: #1f1f1f;
+}
+
 .cell:hover {
   border-color: #666;
 }
@@ -247,7 +318,19 @@ button {
 .cell.active.beat-0,
 .cell.active.beat-1,
 .cell.active.beat-2,
-.cell.active.beat-3 {
+.cell.active.beat-3,
+.cell.active.beat-4,
+.cell.active.beat-5,
+.cell.active.beat-6,
+.cell.active.beat-7,
+.cell.active.beat-8,
+.cell.active.beat-9,
+.cell.active.beat-10,
+.cell.active.beat-11,
+.cell.active.beat-12,
+.cell.active.beat-13,
+.cell.active.beat-14,
+.cell.active.beat-15 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -453,6 +536,10 @@ button {
   margin-bottom: 10px;
 }
 
+.drum-instrument {
+  max-width: 100%;
+}
+
 /* Instrument Controls */
 .drum-controls, .lead-controls, .bass-controls {
   display: flex;
@@ -490,13 +577,36 @@ button {
 .lead-instrument .grid {
   max-height: 600px;
   overflow-y: auto;
+  overflow-x: auto;
   gap: 0;
+  scrollbar-width: auto;
+  scrollbar-color: #666 #2a2a2a;
+}
+
+.lead-instrument .grid::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+.lead-instrument .grid::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 6px;
+}
+
+.lead-instrument .grid::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 6px;
+}
+
+.lead-instrument .grid::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .lead-row {
   gap: 2px;
   height: 24px;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .lead-row.white-key {
@@ -552,7 +662,19 @@ button {
 .white-key .lead-cell.active.beat-0,
 .white-key .lead-cell.active.beat-1,
 .white-key .lead-cell.active.beat-2,
-.white-key .lead-cell.active.beat-3 {
+.white-key .lead-cell.active.beat-3,
+.white-key .lead-cell.active.beat-4,
+.white-key .lead-cell.active.beat-5,
+.white-key .lead-cell.active.beat-6,
+.white-key .lead-cell.active.beat-7,
+.white-key .lead-cell.active.beat-8,
+.white-key .lead-cell.active.beat-9,
+.white-key .lead-cell.active.beat-10,
+.white-key .lead-cell.active.beat-11,
+.white-key .lead-cell.active.beat-12,
+.white-key .lead-cell.active.beat-13,
+.white-key .lead-cell.active.beat-14,
+.white-key .lead-cell.active.beat-15 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -561,7 +683,19 @@ button {
 .black-key .lead-cell.active.beat-0,
 .black-key .lead-cell.active.beat-1,
 .black-key .lead-cell.active.beat-2,
-.black-key .lead-cell.active.beat-3 {
+.black-key .lead-cell.active.beat-3,
+.black-key .lead-cell.active.beat-4,
+.black-key .lead-cell.active.beat-5,
+.black-key .lead-cell.active.beat-6,
+.black-key .lead-cell.active.beat-7,
+.black-key .lead-cell.active.beat-8,
+.black-key .lead-cell.active.beat-9,
+.black-key .lead-cell.active.beat-10,
+.black-key .lead-cell.active.beat-11,
+.black-key .lead-cell.active.beat-12,
+.black-key .lead-cell.active.beat-13,
+.black-key .lead-cell.active.beat-14,
+.black-key .lead-cell.active.beat-15 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -578,22 +712,46 @@ button {
 
 /* Beat grouping for lead instrument - subtle visual separation every 4 beats */
 .white-key .lead-cell.beat-0,
-.white-key .lead-cell.beat-2 {
+.white-key .lead-cell.beat-2,
+.white-key .lead-cell.beat-4,
+.white-key .lead-cell.beat-6,
+.white-key .lead-cell.beat-8,
+.white-key .lead-cell.beat-10,
+.white-key .lead-cell.beat-12,
+.white-key .lead-cell.beat-14 {
   background: #ffffff;
 }
 
 .white-key .lead-cell.beat-1,
-.white-key .lead-cell.beat-3 {
+.white-key .lead-cell.beat-3,
+.white-key .lead-cell.beat-5,
+.white-key .lead-cell.beat-7,
+.white-key .lead-cell.beat-9,
+.white-key .lead-cell.beat-11,
+.white-key .lead-cell.beat-13,
+.white-key .lead-cell.beat-15 {
   background: #f5f5f5;
 }
 
 .black-key .lead-cell.beat-0,
-.black-key .lead-cell.beat-2 {
+.black-key .lead-cell.beat-2,
+.black-key .lead-cell.beat-4,
+.black-key .lead-cell.beat-6,
+.black-key .lead-cell.beat-8,
+.black-key .lead-cell.beat-10,
+.black-key .lead-cell.beat-12,
+.black-key .lead-cell.beat-14 {
   background: #1a1a1a;
 }
 
 .black-key .lead-cell.beat-1,
-.black-key .lead-cell.beat-3 {
+.black-key .lead-cell.beat-3,
+.black-key .lead-cell.beat-5,
+.black-key .lead-cell.beat-7,
+.black-key .lead-cell.beat-9,
+.black-key .lead-cell.beat-11,
+.black-key .lead-cell.beat-13,
+.black-key .lead-cell.beat-15 {
   background: #0f0f0f;
 }
 
@@ -606,13 +764,36 @@ button {
 .bass-instrument .grid {
   max-height: 600px;
   overflow-y: auto;
+  overflow-x: auto;
   gap: 0;
+  scrollbar-width: auto;
+  scrollbar-color: #666 #2a2a2a;
+}
+
+.bass-instrument .grid::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+.bass-instrument .grid::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 6px;
+}
+
+.bass-instrument .grid::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 6px;
+}
+
+.bass-instrument .grid::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .bass-row {
   gap: 2px;
   height: 24px;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .bass-row.white-key {
@@ -668,7 +849,19 @@ button {
 .white-key .bass-cell.active.beat-0,
 .white-key .bass-cell.active.beat-1,
 .white-key .bass-cell.active.beat-2,
-.white-key .bass-cell.active.beat-3 {
+.white-key .bass-cell.active.beat-3,
+.white-key .bass-cell.active.beat-4,
+.white-key .bass-cell.active.beat-5,
+.white-key .bass-cell.active.beat-6,
+.white-key .bass-cell.active.beat-7,
+.white-key .bass-cell.active.beat-8,
+.white-key .bass-cell.active.beat-9,
+.white-key .bass-cell.active.beat-10,
+.white-key .bass-cell.active.beat-11,
+.white-key .bass-cell.active.beat-12,
+.white-key .bass-cell.active.beat-13,
+.white-key .bass-cell.active.beat-14,
+.white-key .bass-cell.active.beat-15 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -677,7 +870,19 @@ button {
 .black-key .bass-cell.active.beat-0,
 .black-key .bass-cell.active.beat-1,
 .black-key .bass-cell.active.beat-2,
-.black-key .bass-cell.active.beat-3 {
+.black-key .bass-cell.active.beat-3,
+.black-key .bass-cell.active.beat-4,
+.black-key .bass-cell.active.beat-5,
+.black-key .bass-cell.active.beat-6,
+.black-key .bass-cell.active.beat-7,
+.black-key .bass-cell.active.beat-8,
+.black-key .bass-cell.active.beat-9,
+.black-key .bass-cell.active.beat-10,
+.black-key .bass-cell.active.beat-11,
+.black-key .bass-cell.active.beat-12,
+.black-key .bass-cell.active.beat-13,
+.black-key .bass-cell.active.beat-14,
+.black-key .bass-cell.active.beat-15 {
   background: #ff9800;
   border-color: #ff9800;
 }
@@ -694,22 +899,46 @@ button {
 
 /* Beat grouping for bass instrument - subtle visual separation every 4 beats */
 .white-key .bass-cell.beat-0,
-.white-key .bass-cell.beat-2 {
+.white-key .bass-cell.beat-2,
+.white-key .bass-cell.beat-4,
+.white-key .bass-cell.beat-6,
+.white-key .bass-cell.beat-8,
+.white-key .bass-cell.beat-10,
+.white-key .bass-cell.beat-12,
+.white-key .bass-cell.beat-14 {
   background: #ffffff;
 }
 
 .white-key .bass-cell.beat-1,
-.white-key .bass-cell.beat-3 {
+.white-key .bass-cell.beat-3,
+.white-key .bass-cell.beat-5,
+.white-key .bass-cell.beat-7,
+.white-key .bass-cell.beat-9,
+.white-key .bass-cell.beat-11,
+.white-key .bass-cell.beat-13,
+.white-key .bass-cell.beat-15 {
   background: #f5f5f5;
 }
 
 .black-key .bass-cell.beat-0,
-.black-key .bass-cell.beat-2 {
+.black-key .bass-cell.beat-2,
+.black-key .bass-cell.beat-4,
+.black-key .bass-cell.beat-6,
+.black-key .bass-cell.beat-8,
+.black-key .bass-cell.beat-10,
+.black-key .bass-cell.beat-12,
+.black-key .bass-cell.beat-14 {
   background: #1a1a1a;
 }
 
 .black-key .bass-cell.beat-1,
-.black-key .bass-cell.beat-3 {
+.black-key .bass-cell.beat-3,
+.black-key .bass-cell.beat-5,
+.black-key .bass-cell.beat-7,
+.black-key .bass-cell.beat-9,
+.black-key .bass-cell.beat-11,
+.black-key .bass-cell.beat-13,
+.black-key .bass-cell.beat-15 {
   background: #0f0f0f;
 }
 
@@ -726,5 +955,16 @@ input[type=range] {
 
 .small-range-input {
   width: 50px;
+}
+
+/* Instrument Card Container */
+.instrument-card-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.instrument-card-content .grid {
+  width: 100%;
+  min-width: 0;
 }
 

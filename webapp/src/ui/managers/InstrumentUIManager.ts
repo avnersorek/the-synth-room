@@ -68,6 +68,25 @@ export class InstrumentUIManager {
   }
 
   /**
+   * Re-render all instrument grids with new column count
+   */
+  reRenderAllInstruments(): void {
+    this.registry.getAllInstruments().forEach((instrument, instrumentId) => {
+      const instrumentContainer = this.getInstrumentContainer(instrumentId);
+      if (instrumentContainer) {
+        // Clear current grid content and re-render just the grid
+        const gridContainer = instrumentContainer.querySelector('.grid');
+        if (gridContainer) {
+          gridContainer.innerHTML = instrument.renderGrid();
+          // Re-attach events for this instrument
+          instrument.attachEvents(instrumentContainer);
+          instrument.updateGridDisplay(instrumentContainer);
+        }
+      }
+    });
+  }
+
+  /**
    * Get the container element for a specific instrument
    */
   private getInstrumentContainer(instrumentId: string): HTMLElement | null {

@@ -34,8 +34,9 @@ export class BassInstrument extends AbstractGridInstrument {
     `;
   }
 
-  protected renderGrid(): string {
+  public renderGrid(): string {
     let html = '';
+    const gridCols = this.getGridCols();
 
     // Render notes in reverse order (C2 at top, C0 at bottom) like a piano roll
     for (let row = 24; row >= 0; row--) {
@@ -45,7 +46,7 @@ export class BassInstrument extends AbstractGridInstrument {
 
       html += `<div class="row bass-row ${keyClass}">`;
       html += renderLabel(noteName, 'bass-label');
-      for (let col = 0; col < 16; col++) {
+      for (let col = 0; col < gridCols; col++) {
         html += renderCell(row, col, 'bass-cell');
       }
       html += `</div>`;
@@ -54,13 +55,13 @@ export class BassInstrument extends AbstractGridInstrument {
     return html;
   }
 
-  protected attachAdditionalEvents(container: HTMLElement): void {
+  protected attachAdditionalEvents(container: HTMLElement, signal: AbortSignal): void {
     // Bass type selector change handler
     const bassTypeSelect = container.querySelector('#bass-type') as HTMLSelectElement;
     if (bassTypeSelect) {
       bassTypeSelect.addEventListener('change', () => {
         this.onBassTypeChange(bassTypeSelect.value);
-      });
+      }, { signal });
     }
   }
 

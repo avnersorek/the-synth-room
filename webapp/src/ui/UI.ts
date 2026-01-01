@@ -64,7 +64,7 @@ export class UI {
     );
 
     // Initialize other managers
-    this.eventManager = new EventManager(sequencer, container);
+    this.eventManager = new EventManager(sequencer, container, this.instrumentUIManager);
     this.animationController = new StepAnimationController(sequencer, container);
 
     // Initialize sync UI manager if sync is enabled
@@ -122,6 +122,15 @@ export class UI {
             <label for="bpm">BPM</label>
             <input type="number" id="bpm" value="120" min="40" max="240" />
           </div>
+          <div class="panel-divider"></div>
+          <div class="grid-cols-panel">
+            <span class="section-label"></span>
+            <label for="grid-cols">Beats</label>
+            <select id="grid-cols">
+              <option value="16">16</option>
+              <option value="32">32</option>
+            </select>
+          </div>
         </div>
 
         ${this.instrumentPanel.render()}
@@ -173,6 +182,18 @@ export class UI {
       if (bpmInput) {
         bpmInput.value = bpm.toString();
       }
+    });
+
+    // Listen to remote grid column count changes and update UI
+    this.syncUIManager.setupGridColsChangeListener((gridCols) => {
+      const gridColsSelect = this.container.querySelector('#grid-cols') as HTMLSelectElement;
+      if (gridColsSelect) {
+        gridColsSelect.value = gridCols.toString();
+      }
+
+      // Re-render all instrument grids with new column count
+      // Note: Yjs will automatically sync the resized arrays from the remote user
+      this.instrumentUIManager.reRenderAllInstruments();
     });
   }
 

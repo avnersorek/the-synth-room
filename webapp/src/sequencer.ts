@@ -12,6 +12,7 @@ export class Sequencer {
   private currentStep: number;
   private loopId: number | null;
   private bpm: number;
+  private gridCols: number;
   private sync: SyncManager | null;
   private onStepCallbacks: Array<(step: number) => void>;
 
@@ -22,6 +23,7 @@ export class Sequencer {
     this.currentStep = 0;
     this.loopId = null;
     this.bpm = 120;
+    this.gridCols = 16;
     this.onStepCallbacks = [];
 
     // Set initial BPM in Tone.Transport
@@ -106,6 +108,7 @@ export class Sequencer {
     const lead2Grid = sync.getGrid('lead2');
     const bassGrid = sync.getGrid('bass');
     this.bpm = sync.getBpm();
+    this.gridCols = sync.getGridCols();
 
     const drumsInstrument = this.instruments.get('drums');
     const lead1Instrument = this.instruments.get('lead1');
@@ -145,6 +148,11 @@ export class Sequencer {
         this.stop();
         this.play();
       }
+    });
+
+    // Listen to remote grid column count changes
+    this.sync.onGridColsChange((value) => {
+      this.setGridCols(value);
     });
 
     // Listen to remote volume changes
@@ -240,6 +248,30 @@ export class Sequencer {
     return this.audio.getEffectSend(instrumentId);
   }
 
+  setGridCols(cols: number) {
+    this.gridCols = cols;
+
+    // Update all instruments' grid column counts
+    this.instruments.forEach((instrument) => {
+      instrument.updateGridCols(cols);
+    });
+
+    // Reset step if it's out of bounds
+    if (this.currentStep >= cols) {
+      this.currentStep = 0;
+    }
+
+    // If playing, restart with new column count
+    if (this.isPlaying()) {
+      this.stop();
+      this.play();
+    }
+  }
+
+  getGridCols(): number {
+    return this.gridCols;
+  }
+
   play() {
     if (this.loopId !== null) {return;}
 
@@ -263,7 +295,7 @@ export class Sequencer {
       });
 
       // Update step counter after scheduling UI update (works even when tab is not focused)
-      this.currentStep = (this.currentStep + 1) % 16;
+      this.currentStep = (this.currentStep + 1) % this.gridCols;
     }, '16n');
 
     transport.start();
