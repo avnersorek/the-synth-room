@@ -67,28 +67,6 @@ h3 {
   font-size: 14px;
 }
 
-.bpm-panel {
-  display: flex;
-  justify-self: space-between;
-  align-items: center;
-  gap: 15px;
-}
-
-.panel-divider {
-  width: 2px;
-  height: 40px;
-  background: #444;
-  margin: 0 20px;
-}
-
-.section-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
 .room-url-section {
   margin-bottom: 20px;
 }
@@ -114,16 +92,6 @@ h3 {
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
-}
-
-#bpm {
-  width: 80px;
-  padding: 8px;
-  font-size: 16px;
-  border: 2px solid #444;
-  background: #2a2a2a;
-  color: #fff;
-  border-radius: 4px;
 }
 
 #volume {

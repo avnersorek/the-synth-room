@@ -3,6 +3,7 @@
  */
 
 import './style.css';
+import './styles/forms/controls.css';
 import './components/glowcard.css';
 import { AppInitializer } from './init/AppInitializer';
 

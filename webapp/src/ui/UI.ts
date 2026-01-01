@@ -117,13 +117,12 @@ export class UI {
             </label>
           </div>
           <div class="panel-divider"></div>
-          <div class="bpm-panel">
+          <div class="control-panel">
             <span class="section-label">room</span>
             <label for="bpm">BPM</label>
             <input type="number" id="bpm" value="120" min="40" max="240" />
           </div>
-          <div class="panel-divider"></div>
-          <div class="grid-cols-panel">
+          <div class="control-panel">
             <span class="section-label"></span>
             <label for="grid-cols">Beats</label>
             <select id="grid-cols">

@@ -7,3 +7,10 @@
 
 # code
 - do a simple code review you'll find enough stuff like ...
+
+1. extract initializeFromSync from @webapp/src/sequencer.ts to it's own utility file in charge of sequencer-sync 
+
+2. Extract the last methods in @webapp/src/ui/UI.ts that are instrument-specific, to their own instrument components 
+
+split style.css for god's sake
+style beat classes should be dynamic not like jesus christ with numbers
