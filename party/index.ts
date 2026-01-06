@@ -1,10 +1,13 @@
 import type * as Party from "partykit/server";
 import { onConnect } from "y-partykit";
+import * as Y from 'yjs';
 
 const ROOMS_METADATA_ROOM_ID = "rooms";
 
 type RoomMetadata = {
     roomId: string;
+    connectionCount?: number;
+    hasData: boolean;
 }
 
 export default class SynthRoomServer implements Party.Server {
@@ -17,11 +20,31 @@ export default class SynthRoomServer implements Party.Server {
         return typeof value === 'string' ? value : fallback;
     }
 
-    private callRoom = (roomId: string, init: RequestInit) =>
+    private callOtherRoom = (roomId: string, init: RequestInit) =>
         fetch(`${this.getEnv('PARTYKIT_HOST', "http://localhost:1999")}/parties/main/${roomId}`, init);
 
     private callRoomsMetadataRoom = (init: RequestInit) =>
-        this.callRoom(ROOMS_METADATA_ROOM_ID, init);
+        this.callOtherRoom(ROOMS_METADATA_ROOM_ID, init);
+
+    private async thisRoomHasData(): Promise<boolean> {
+        const ydoc = new Y.Doc();
+        const storageItems = await this.room.storage.list();
+        for (const value of [...storageItems.values()] as Uint8Array[]) {
+            try {
+                Y.applyUpdate(ydoc, value);
+            } catch {
+                // some items are not updates
+            }
+        }
+        const instruments = ydoc.getMap('instruments').toJSON() as Record<string, { grid: number[][] }>;
+        const hasData =
+            Object.keys(instruments).some(
+                instrument => (instruments[instrument].grid).some(
+                    channel => channel.some(
+                        note => note !== 0)));
+
+        return hasData;
+    }
 
     private createResponse = (body: object, status = 200) => new Response(JSON.stringify(body), {
         status,
@@ -36,10 +59,11 @@ export default class SynthRoomServer implements Party.Server {
     async onConnect(conn: Party.Connection, _ctx: Party.ConnectionContext) {
         // y-partykit handles all Yjs protocol communication
         return onConnect(conn, this.room, {
-            persist: true,
+            persist: { mode: "snapshot" },
             callback: {
                 handler: async () => {
                     if (this.room.id !== ROOMS_METADATA_ROOM_ID) {
+                        // Register room in metadata (will be filtered when empty in getRoomsList)
                         await this.callRoomsMetadataRoom({
                             method: "POST",
                             body: JSON.stringify({
@@ -57,7 +81,7 @@ export default class SynthRoomServer implements Party.Server {
             const url = new URL(request.url);
             console.log('Incoming Request', request.method, url.pathname);
 
-            if (url.pathname === `/parties/main/${  ROOMS_METADATA_ROOM_ID}`) {
+            if (url.pathname === `/parties/main/${ROOMS_METADATA_ROOM_ID}`) {
                 // WE ARE IN THE ROOMS METADATA ROOM
                 if (request.method === "POST") {
                     const payload: RoomMetadata = await request.json();
@@ -71,12 +95,13 @@ export default class SynthRoomServer implements Party.Server {
                 if (request.method === "GET") {
                     return this.createResponse({
                         roomId: this.room.id,
-                        connectionCount: [...this.room.getConnections()].length
+                        connectionCount: [...this.room.getConnections()].length,
+                        hasData: await this.thisRoomHasData()
                     });
                 }
             }
 
-            return this.createResponse({ error: `Not Found ${  url.pathname}` }, 404);
+            return this.createResponse({ error: `Not Found ${url.pathname}` }, 404);
         } catch (error) {
             console.log(`Error on ${request.method} ${request.url}`);
             console.error(error);
@@ -85,12 +110,21 @@ export default class SynthRoomServer implements Party.Server {
     }
 
     private async getRoomsList() {
+        // I implemented this using a static room but maybe it can be done using partykit Party.Lobby
         const roomsKeys = await this.room.storage.list().then(roomsMap => [...roomsMap.keys()]);
         const roomsList: RoomMetadata[] = [];
+
         for (const roomKey of roomsKeys) {
-            const roomData = await this.callRoom(roomKey, { method: 'GET' });
-            roomsList.push(await roomData.json());
+            const roomData = await this.callOtherRoom(roomKey, { method: 'GET' });
+            const roomJson: RoomMetadata = await roomData.json();
+
+            if (roomJson.hasData || roomJson.connectionCount) {
+                roomsList.push(roomJson);
+            } else {
+                await this.room.storage.delete(roomKey);
+            }
         }
+
         return this.createResponse({ roomsList });
     }
 }
