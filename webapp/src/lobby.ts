@@ -86,9 +86,8 @@ export class Lobby {
           <p class="loading">Loading rooms...</p>
         </div>
         <div class="debug-info">
-          <span class="debug-label">Debug:</span>
-          <span class="debug-hash">${__COMMIT_HASH__}</span>
-          <span class="debug-message">"${this.escapeHtml(__COMMIT_MESSAGE__)}</span>"
+          <a href="https://www.github.com/avnersorek/the-synth-room" target="_blank">Github</a>
+          <span class="debug-hash" title="${__COMMIT_HASH__} - ${this.escapeHtml(__COMMIT_MESSAGE__)}">#️</span>
         </div>
       </div>
     `;
@@ -151,7 +150,7 @@ export class Lobby {
 
   private renderRoomsList(rooms: Room[]) {
     const roomsList = this.container.querySelector('#rooms-list');
-    if (!roomsList) {return;}
+    if (!roomsList) { return; }
 
     if (rooms.length === 0) {
       roomsList.innerHTML = `
