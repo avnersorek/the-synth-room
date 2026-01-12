@@ -121,6 +121,7 @@ export default class SynthRoomServer implements Party.Server {
             if (roomJson.hasData || roomJson.connectionCount) {
                 roomsList.push(roomJson);
             } else {
+                console.log(`deleting room ${roomKey} from storage list`);
                 await this.room.storage.delete(roomKey);
             }
         }

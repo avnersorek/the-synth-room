@@ -23,6 +23,7 @@ export class SyncManager {
   private instruments!: Y.Map<unknown>;
   private connectionCallbacks: ((status: ConnectionStatus) => void)[] = [];
   private connectionStatus: ConnectionStatus = { connected: false, synced: false };
+  private firstSyncCompleted = false;
 
   // Domain-specific managers
   private gridManager!: GridSyncManager;
@@ -39,6 +40,9 @@ export class SyncManager {
     // Initialize Yjs document
     this.ydoc = new Y.Doc();
 
+    // Initialize instruments map reference immediately
+    this.instruments = this.ydoc.getMap('instruments');
+
     // Connect to PartyKit server FIRST before initializing data
     this.provider = new PartyKitProvider(
       config.partyKitHost,
@@ -49,6 +53,9 @@ export class SyncManager {
       }
     );
 
+    // Initialize managers immediately so methods like getKit() work right away
+    this.initializeManagers();
+
     // Set up connection status listeners
     this.provider.on('status', (event: { status: string }) => {
       this.connectionStatus.connected = event.status === 'connected';
@@ -58,23 +65,24 @@ export class SyncManager {
     this.provider.on('sync', (synced: boolean) => {
       this.connectionStatus.synced = synced;
 
-      // After sync, refresh our references to ensure we have the latest data
-      if (synced) {
+      // After first sync, initialize default data if room is empty
+      if (synced && !this.firstSyncCompleted) {
+        this.firstSyncCompleted = true;
+        // Only initialize defaults if room is truly empty (no instruments)
+        if (this.instruments.size === 0) {
+          this.initializeDefaultData();
+        }
+        this.refreshReferences();
+      } else if (synced) {
+        // After subsequent syncs, just refresh references
         this.refreshReferences();
       }
 
       this.notifyConnectionChange(this.connectionStatus);
     });
-
-    // Initialize default data (will be overridden by remote state if room exists)
-    this.initializeDefaultData();
-    this.initializeManagers();
   }
 
   private initializeDefaultData() {
-    // Initialize instruments map
-    this.instruments = this.ydoc.getMap('instruments');
-
     // Initialize each instrument from the INSTRUMENTS config
     Object.keys(INSTRUMENTS).forEach((instrumentId) => {
       if (!this.instruments.has(instrumentId)) {

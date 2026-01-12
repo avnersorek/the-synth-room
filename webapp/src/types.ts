@@ -68,6 +68,22 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
       volume: 0.7,
     }
   },
+  bass: {
+    id: 'bass',
+    type: 'lead',
+    name: 'Bass',
+    samples: BASS_NOTES.map(note => ({ name: note, path: '' })),
+    gridRows: 25,
+    gridCols: 16,
+    parameters: {
+      volume: 0.5,
+      bassType: 'Guitar',
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 0.4,
+      release: 2,
+    }
+  },
   lead1: {
     id: 'lead1',
     type: 'lead',
@@ -102,22 +118,6 @@ export const INSTRUMENTS: { [key: string]: InstrumentConfig } = {
       release: 1.2,
       cutoff: 2000,
       resonance: 1,
-    }
-  },
-  bass: {
-    id: 'bass',
-    type: 'lead',
-    name: 'Bass',
-    samples: BASS_NOTES.map(note => ({ name: note, path: '' })),
-    gridRows: 25,
-    gridCols: 16,
-    parameters: {
-      volume: 0.5,
-      bassType: 'Guitar',
-      attack: 0.01,
-      decay: 0.1,
-      sustain: 0.4,
-      release: 2,
     }
   }
 };
