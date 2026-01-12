@@ -322,10 +322,6 @@ button {
   transition: color 0.3s;
 }
 
-#connection-status {
-  font-weight: bold;
-}
-
 #users-count {
   color: #888;
 }

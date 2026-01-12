@@ -4,6 +4,8 @@
 
 import { SyncManager } from '../../sync/SyncManager';
 
+const COPIED = 'Room Link Copied';
+
 export class SyncUIManager {
   private sync: SyncManager;
   private container: HTMLElement;
@@ -28,22 +30,32 @@ export class SyncUIManager {
    * Handle copy room URL button
    */
   private setupCopyRoomButton(): void {
-    const copyButton = this.container.querySelector('#copy-room');
+    const copyButton = this.container.querySelector('#copy-room') as HTMLButtonElement;
     if (copyButton) {
       copyButton.addEventListener('click', () => {
         const roomId = this.sync.getRoomId();
         const roomUrl = roomId ? `${window.location.origin}${window.location.pathname}?room=${roomId}` : '';
         void navigator.clipboard.writeText(roomUrl)
           .then(() => {
-            copyButton.textContent = '✓';
+            copyButton.textContent = COPIED;
             setTimeout(() => {
-              copyButton.textContent = '📋';
+              this.updateCopyButtonText(copyButton);
             }, 2000);
           })
           .catch((error) => {
             console.error('Failed to copy room URL:', error);
           });
       });
+    }
+  }
+
+  /**
+   * Update copy button text with room ID
+   */
+  private updateCopyButtonText(button: HTMLButtonElement): void {
+    const roomId = this.sync.getRoomId();
+    if (roomId) {
+      button.textContent = roomId;
     }
   }
 
@@ -80,25 +92,31 @@ export class SyncUIManager {
   private updateConnectionStatus(): void {
     const status = this.sync.getConnectionStatus();
     const statusIndicator = this.container.querySelector('#status-indicator') as HTMLElement;
-    const statusText = this.container.querySelector('#connection-status') as HTMLElement;
     const usersCount = this.container.querySelector('#users-count') as HTMLElement;
+    const copyButton = this.container.querySelector('#copy-room') as HTMLButtonElement;
 
-    if (statusIndicator && statusText) {
+    if (statusIndicator) {
       if (status.synced) {
         statusIndicator.style.color = '#00ff00';
-        statusText.textContent = 'Connected';
+        const roomId = this.sync.getRoomId();
+        statusIndicator.title = `Connected (${roomId})`;
       } else if (status.connected) {
         statusIndicator.style.color = '#ffaa00';
-        statusText.textContent = 'Syncing...';
+        statusIndicator.title = 'Syncing...';
       } else {
         statusIndicator.style.color = '#ff0000';
-        statusText.textContent = 'Disconnected';
+        statusIndicator.title = 'Disconnected';
       }
     }
 
     if (usersCount) {
       const count = this.sync.getConnectedUsersCount();
       usersCount.textContent = count > 1 ? `(${count} users)` : '';
+    }
+
+    // Update copy button with room ID
+    if (copyButton && copyButton.textContent !== COPIED) {
+      this.updateCopyButtonText(copyButton);
     }
   }
 
