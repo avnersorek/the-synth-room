@@ -15,6 +15,7 @@ import { StepAnimationController } from './managers/StepAnimationController';
 import { InstrumentRegistry } from './managers/InstrumentRegistry';
 import { InstrumentUIManager } from './managers/InstrumentUIManager';
 import { InstrumentSyncCoordinator } from './managers/InstrumentSyncCoordinator';
+import '../styles/room-background.css';
 
 export class UI {
   private sequencer: Sequencer;
@@ -78,7 +79,16 @@ export class UI {
   render() {
     const sync = this.sequencer.getSync();
 
+    // Add class to body for room-specific styling
+    document.body.classList.remove('lobby-page');
+    document.body.classList.add('room-page');
+
     this.container.innerHTML = `
+        <!-- Animated sliding diagonal backgrounds -->
+        <div class="room-bg"></div>
+        <div class="room-bg room-bg-2"></div>
+        <div class="room-bg room-bg-3"></div>
+
         <div class="header">
           <h1>The Synth Room</h1>
           ${sync ? `
