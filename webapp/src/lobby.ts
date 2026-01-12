@@ -32,6 +32,11 @@ export class Lobby {
     this.container.innerHTML = `
       <div class="lobby">
         <h1>The Synth Room - Lobby</h1>
+        <p class="lobby-description">
+          The Synth Room is a synth sampler playground for jamming together.<br/>
+          Everything is public and you can jam together in rooms on a 16/32 beat 4 instrument loop.<br/>
+          I built this as a side project and I hope you enjoy it.
+        </p>
         <div class="lobby-actions">
           <button id="create-room" class="action-button">Create New Room</button>
           <button id="refresh-rooms" class="action-button">Refresh</button>
@@ -39,11 +44,22 @@ export class Lobby {
         <div id="rooms-list" class="rooms-list">
           <p class="loading">Loading rooms...</p>
         </div>
+        <div class="debug-info">
+          <span class="debug-label">Debug:</span>
+          <span class="debug-hash">${__COMMIT_HASH__}</span>
+          <span class="debug-message">"${this.escapeHtml(__COMMIT_MESSAGE__)}</span>"
+        </div>
       </div>
     `;
 
     this.attachEvents();
     await this.loadRooms();
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   private attachEvents() {
@@ -110,11 +126,9 @@ export class Lobby {
       .map(
         (room) => `
         <div class="room-card" data-room-id="${room.roomId}">
-          <div class="room-header">
-            <h3 class="room-id">${room.roomId}</h3>
-            <span class="user-count">${room.connectionCount} ${room.connectionCount === 1 ? 'user' : 'users'}</span>
-          </div>
+          <h3 class="room-id">${room.roomId}</h3>
           <div class="room-footer">
+            <span class="user-count">${room.connectionCount} ${room.connectionCount === 1 ? 'user' : 'users'}</span>
             <button class="join-button" data-room-id="${room.roomId}">Join Room</button>
           </div>
         </div>
