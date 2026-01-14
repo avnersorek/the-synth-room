@@ -12,6 +12,30 @@
   --base: 0;
 }
 
+/* Mobile optimizations - smaller cards and reduced effects for landscape phones */
+@media screen and (max-height: 600px) and (orientation: landscape) {
+  :root {
+    --card-size: clamp(500px, 75vw, 900px);
+    --border: 2;
+    --bg-spot-opacity: 0.1;
+    --border-spot-opacity: 0.5;
+  }
+
+  .instrument-card {
+    padding: 1rem;
+    min-height: 150px;
+  }
+
+  .instrument-card h2 {
+    font-size: 1.25rem;
+  }
+
+  .nav-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* Instrument selector container with nav buttons */
 .instrument-selector {
   position: relative;
@@ -285,4 +309,65 @@
 .drum-controls select:focus {
   outline: none;
   border-color: #ff9800;
+}
+
+/* Performance optimizations for mobile devices */
+@media screen and (max-width: 1024px) {
+  /* Simplify glow effects - remove expensive background-attachment: fixed */
+  [data-glow],
+  [data-glow]::before,
+  [data-glow]::after,
+  .instrument-card-wrapper::after {
+    background-attachment: local !important;
+  }
+
+  /* Reduce number of gradient layers */
+  .instrument-card-wrapper::after {
+    opacity: 0.5;
+  }
+
+  [data-glow]::before {
+    opacity: 0.7;
+  }
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Disable glow effects */
+  [data-glow],
+  [data-glow]::before,
+  [data-glow]::after,
+  .instrument-card-wrapper::after {
+    background-image: none !important;
+  }
+
+  .instrument-card {
+    transform: none !important;
+  }
+}
+
+/* Further optimizations for very small mobile devices */
+@media screen and (max-width: 768px) {
+  /* Disable complex masks and filters on mobile */
+  .instrument-card-wrapper::after {
+    display: none;
+  }
+
+  [data-glow]::before,
+  [data-glow]::after {
+    display: none;
+  }
+
+  /* Simpler border glow using box-shadow instead */
+  .instrument-card {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.3);
+  }
 }

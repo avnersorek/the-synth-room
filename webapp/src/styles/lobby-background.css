@@ -135,3 +135,40 @@ body.lobby-page {
 .debug-message {
   color: #c4b5fd;
 }
+
+/* Performance optimizations for mobile devices */
+@media screen and (max-width: 1024px) {
+  /* Reduce animation complexity on mobile */
+  .lobby-blob-out-top,
+  .lobby-blob-in-top,
+  .lobby-blob-out-bottom,
+  .lobby-blob-in-bottom {
+    animation-duration: 30s;
+  }
+}
+
+/* Disable animations on very small devices */
+@media screen and (max-width: 768px) {
+  .lobby-blob-out-top,
+  .lobby-blob-in-top,
+  .lobby-blob-out-bottom,
+  .lobby-blob-in-bottom {
+    animation: none;
+  }
+
+  /* Remove backdrop-filter which is expensive on mobile */
+  .room-card {
+    backdrop-filter: none;
+    background: rgba(20, 20, 25, 0.95);
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .lobby-blob-out-top,
+  .lobby-blob-in-top,
+  .lobby-blob-out-bottom,
+  .lobby-blob-in-bottom {
+    animation: none;
+  }
+}
