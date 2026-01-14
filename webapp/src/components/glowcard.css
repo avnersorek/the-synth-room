@@ -12,6 +12,67 @@
   --base: 0;
 }
 
+/* Instrument selector container with nav buttons */
+.instrument-selector {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Navigation buttons */
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: hsl(0 0% 15% / 0.8);
+  border: 2px solid hsl(0 0% 30%);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  color: hsl(0 0% 100%);
+  backdrop-filter: blur(4px);
+}
+
+.nav-button:hover {
+  background: hsl(0 0% 25% / 0.9);
+  border-color: hsl(30 100% 50%);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-button:active {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-button:disabled:hover {
+  transform: translateY(-50%);
+  background: hsl(0 0% 15% / 0.8);
+  border-color: hsl(0 0% 30%);
+}
+
+.nav-button-left {
+  left: 1rem;
+}
+
+.nav-button-right {
+  right: 1rem;
+}
+
+.nav-button svg {
+  pointer-events: none;
+}
+
 /* Horizontal scrollable container */
 .instrument-scroll-container {
   display: flex;
