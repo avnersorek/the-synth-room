@@ -19,6 +19,11 @@ function getGitCommitMessage(): string {
 }
 
 export default defineConfig({
+  server: {
+    allowedHosts: [
+      'twiglike-overlogically-isobel.ngrok-free.app'
+    ]
+  },
   define: {
     __COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
     __COMMIT_MESSAGE__: JSON.stringify(getGitCommitMessage()),
